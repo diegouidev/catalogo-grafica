@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cores extraídas da sua logo */
+  --color-brand-blue: #00AEEF;
+  --color-brand-navy: #1A1B35;
+  --color-brand-white: #F8F9FA;
+}
+
+:root {
+  --foreground-rgb: 26, 27, 53;
+  --background-start-rgb: 248, 249, 250;
+  --background-end-rgb: 255, 255, 255;
+}
+
+.dark {
+  --foreground-rgb: 248, 249, 250;
+  --background-start-rgb: 13, 14, 28;
+  --background-end-rgb: 10, 11, 20;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+  min-height: 100vh;
+}
+
+/* Scrollbar com as cores da marca */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-brand-blue) 30%, transparent);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-brand-blue) 50%, transparent);
+}
