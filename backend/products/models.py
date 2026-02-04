@@ -1,0 +1,51 @@
+from django.db import models
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(unique=True)
+    icon = models.ImageField(upload_to='categories/', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+class Product(models.Model):
+    category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='products/')
+    production_time = models.CharField(max_length=50, help_text="Ex: 2 dias úteis, 5 horas") # Novo campo
+    is_active = models.BooleanField(default=True)
+    views_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+class ProductVariant(models.Model):
+    """Aqui gerenciamos as variações como 100un, 500un, 3cm, 5cm etc."""
+    product = models.ForeignKey(Product, related_name='variants', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100) # Ex: "500 unidades" ou "Tamanho 3x3cm"
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    def __str__(self):
+        return f"{self.product.name} - {self.name}"
+
+
+class Banner(models.Model):
+    title = models.CharField(max_length=200, blank=True)
+    subtitle = models.CharField(max_length=200, blank=True)
+    image = models.ImageField(upload_to='banners/')
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+class CompanyConfig(models.Model):
+    name = models.CharField(max_length=100, default="Cloud Design")
+    whatsapp = models.CharField(max_length=20)
+    instagram = models.CharField(max_length=100)
+    address = models.TextField()
+    map_iframe = models.TextField(help_text="Cole aqui o iframe do Google Maps")
+
+    def __str__(self):
+        return self.name
