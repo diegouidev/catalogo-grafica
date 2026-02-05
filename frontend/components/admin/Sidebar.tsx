@@ -1,81 +1,85 @@
+// frontend/components/admin/Sidebar.tsx
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
-    PackagePlus,
+    Package,
+    Tags,
     Image as ImageIcon,
     Settings,
     LogOut,
-    ChevronRight,
-    Store,
-    Tag
+    Ticket, // Ícone para os cupons
+    ExternalLink
 } from "lucide-react";
 import Cookies from 'js-cookie';
-
-const menuItems = [
-    { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-    { name: "Produtos", icon: PackagePlus, path: "/admin/produtos" },
-    { name: "Categorias", icon: Tag, path: "/admin/categorias" },
-    { name: "Banners", icon: ImageIcon, path: "/admin/banners" },
-    { name: "Minha Gráfica", icon: Store, path: "/admin/config" },
-];
+import { useRouter } from "next/navigation";
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
 
+    const menuItems = [
+        { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
+        { name: "Produtos", icon: Package, path: "/admin/produtos" },
+        { name: "Categorias", icon: Tags, path: "/admin/categorias" },
+        { name: "Banners", icon: ImageIcon, path: "/admin/banners" },
+        { name: "Cupons", icon: Ticket, path: "/admin/cupons" }, // Novo item adicionado
+        { name: "Configurações", icon: Settings, path: "/admin/configuracoes" },
+    ];
+
     const handleLogout = () => {
-        // Limpa a sessão em ambos os locais para garantir a segurança
+        Cookies.remove('auth_token');
         localStorage.removeItem("token");
-        Cookies.remove('auth_token', { path: '/' });
         router.push("/admin/login");
-        router.refresh();
     };
 
     return (
-        <aside className="w-64 min-h-screen bg-white dark:bg-[#0a0b14] border-r border-gray-100 dark:border-white/10 flex flex-col transition-all">
-            {/* Área do Logo */}
-            <div className="p-8 border-b dark:border-white/10 flex items-center gap-3">
-                <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-lg shadow-brand-blue/20">
-                    <span className="text-white font-black text-xl">C</span>
-                </div>
-                <div className="flex flex-col">
-                    <span className="font-black dark:text-white text-sm tracking-tight uppercase">Cloud Admin</span>
-                    <span className="text-[10px] text-brand-blue font-bold uppercase tracking-widest leading-none">Controle</span>
-                </div>
+        <aside className="w-72 bg-[#0a0b14] border-r border-white/5 flex flex-col h-screen sticky top-0">
+            {/* Logo / Nome da Gráfica */}
+            <div className="p-8">
+                <h1 className="text-white font-black text-2xl italic tracking-tighter flex items-center gap-2">
+                    CLOUD <span className="text-brand-blue">DESIGN</span>
+                </h1>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em] mt-1">Admin Panel</p>
             </div>
 
-            {/* Navegação Principal */}
-            <nav className="flex-grow p-4 space-y-2">
+            {/* Menu de Navegação */}
+            <nav className="flex-1 px-4 space-y-2">
                 {menuItems.map((item) => {
                     const isActive = pathname === item.path;
                     return (
                         <Link
                             key={item.path}
                             href={item.path}
-                            className={`flex items-center justify-between p-4 rounded-2xl transition-all group ${isActive
-                                ? "bg-brand-blue text-white shadow-xl shadow-brand-blue/20"
-                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                            className={`flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all group ${isActive
+                                ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/20"
+                                : "text-gray-500 hover:text-white hover:bg-white/5"
                                 }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <item.icon size={20} className={isActive ? "text-white" : "group-hover:text-brand-blue"} />
-                                <span className="font-bold text-sm">{item.name}</span>
-                            </div>
-                            {isActive && <ChevronRight size={16} />}
+                            <item.icon size={20} className={`${isActive ? "text-white" : "text-brand-blue group-hover:scale-110 transition-transform"}`} />
+                            <span className="text-sm uppercase tracking-widest">{item.name}</span>
                         </Link>
                     );
                 })}
             </nav>
 
-            {/* Botão de Sair */}
-            <div className="p-4 border-t dark:border-white/10">
+            {/* Ações de Rodapé */}
+            <div className="p-6 border-t border-white/5 space-y-2">
+                <Link
+                    href="/"
+                    target="_blank"
+                    className="flex items-center gap-4 px-6 py-4 text-gray-500 font-bold hover:text-brand-blue transition-colors text-xs uppercase tracking-widest"
+                >
+                    <ExternalLink size={18} />
+                    Ver Catálogo
+                </Link>
+
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 p-4 text-red-500 font-bold text-sm hover:bg-red-50 dark:hover:bg-red-500/10 rounded-2xl transition-all"
+                    className="w-full flex items-center gap-4 px-6 py-4 text-red-500 font-bold hover:bg-red-500/10 rounded-2xl transition-all text-xs uppercase tracking-widest"
                 >
-                    <LogOut size={20} />
+                    <LogOut size={18} />
                     Sair do Sistema
                 </button>
             </div>

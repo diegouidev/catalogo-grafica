@@ -1,11 +1,12 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Category, Product, Banner, CompanyConfig
-from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer
+from .models import Category, Product, Banner, CompanyConfig, Coupon
+from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -82,3 +83,19 @@ class DashboardStatsView(APIView):
             "total_catalog_views": total_views,
             "ranking": serializer.data
         })
+
+class CouponViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Coupon.objects.filter(is_active=True)
+    serializer_class = CouponSerializer
+
+    @action(detail=False, methods=['get'])
+    def validate(self, request):
+        code = request.query_params.get('code')
+        try:
+            coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+            return Response({
+                'code': coupon.code,
+                'discount_percentage': coupon.discount_percentage
+            })
+        except Coupon.DoesNotExist:
+            return Response({'error': 'Cupom inválido'}, status=status.HTTP_404_NOT_FOUND)

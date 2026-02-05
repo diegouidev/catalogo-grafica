@@ -8,6 +8,13 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+class Finishing(models.Model):
+    """Ex: Frente e Verso, Só Frente, Verniz Localizado, etc."""
+    name = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.name
+
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -16,7 +23,9 @@ class Product(models.Model):
     production_time = models.CharField(max_length=50, help_text="Ex: 2 dias úteis, 5 horas") # Novo campo
     is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0)
-
+    is_featured = models.BooleanField(default=False, verbose_name="Destaque")
+    finishings = models.ManyToManyField(Finishing, blank=True, verbose_name="Acabamentos")
+    
     def __str__(self):
         return self.name
 
@@ -49,3 +58,11 @@ class CompanyConfig(models.Model):
 
     def __str__(self):
         return self.name
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_percentage}%)"

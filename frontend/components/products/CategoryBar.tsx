@@ -8,29 +8,33 @@ interface CategoryBarProps {
 
 export default function CategoryBar({ categories, selectedCategory, onSelectCategory }: CategoryBarProps) {
     return (
-        <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-            <button
-                onClick={() => onSelectCategory("todos")}
-                className={`px-6 py-2 rounded-full whitespace-nowrap font-medium transition-all ${selectedCategory === "todos"
-                    ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/30"
-                    : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10"
-                    }`}
-            >
-                Todos
-            </button>
-
-            {categories.map((cat: any) => (
+        <div className="w-full overflow-hidden">
+            {/* O 'no-scrollbar' deve estar no seu globals.css para esconder a barra, 
+                mas 'overflow-x-auto' garante que funcione o touch */}
+            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar touch-pan-x">
                 <button
-                    key={cat.id}
-                    onClick={() => onSelectCategory(cat.slug)}
-                    className={`px-6 py-2 rounded-full whitespace-nowrap font-medium transition-all ${selectedCategory === cat.slug
-                        ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/30"
-                        : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10"
+                    onClick={() => onSelectCategory("todos")}
+                    className={`px-6 py-3 rounded-2xl whitespace-nowrap text-sm font-bold uppercase tracking-widest transition-all border ${selectedCategory === "todos"
+                        ? "bg-brand-blue border-brand-blue text-white shadow-[0_0_20px_rgba(0,174,239,0.3)]"
+                        : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
                         }`}
                 >
-                    {cat.name}
+                    Todos
                 </button>
-            ))}
+
+                {categories.map((cat: any) => (
+                    <button
+                        key={cat.id}
+                        onClick={() => onSelectCategory(cat.slug)}
+                        className={`px-6 py-3 rounded-2xl whitespace-nowrap text-sm font-bold uppercase tracking-widest transition-all border ${selectedCategory === cat.slug
+                            ? "bg-brand-blue border-brand-blue text-white shadow-[0_0_20px_rgba(0,174,239,0.3)]"
+                            : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white"
+                            }`}
+                    >
+                        {cat.name}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

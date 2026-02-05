@@ -1,14 +1,20 @@
 from rest_framework import serializers
 import json
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing
 
 class VariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariant
         fields = ['id', 'name', 'price']
 
+class FinishingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Finishing
+        fields = ['id', 'name']
+
 class ProductSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, read_only=True)
+    finishings = FinishingSerializer(many=True, read_only=True)
     category_name = serializers.ReadOnlyField(source='category.name')
     category_slug = serializers.ReadOnlyField(source='category.slug')
 
@@ -17,7 +23,8 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'description', 'image', 
             'production_time', 'category', 'category_name', 
-            'variants', 'views_count', 'category_slug'
+            'variants', 'views_count', 'category_slug', 
+            'is_featured', 'finishings',
         ]
 
     def create(self, validated_data):
@@ -98,3 +105,9 @@ class CompanyConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyConfig
         fields = ['name', 'whatsapp', 'instagram', 'address', 'map_iframe']
+
+
+class CouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coupon
+        fields = ['code', 'discount_percentage', 'is_active']

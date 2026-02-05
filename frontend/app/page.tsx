@@ -11,7 +11,7 @@ import { getProducts, getBanners, getCategories } from "@/services/api";
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("todos");
   const [loading, setLoading] = useState(true);
 
@@ -35,25 +35,32 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Lógica de Filtro Airtight
+  // Lógica do Filtro
   const filteredProducts = selectedCategory === "todos"
     ? products
     : products.filter((p: any) => p.category_slug === selectedCategory);
 
+  // Lógica do Título Dinâmico
+  const currentCategoryName = selectedCategory === "todos"
+    ? "Mais Pedidos"
+    : categories.find((c: any) => c.slug === selectedCategory)?.name || "Produtos";
+
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center dark:bg-brand-navy dark:text-white">
-      Carregando Cloud Design...
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0b14] text-white font-black animate-pulse">
+      CARREGANDO CLOUD DESIGN...
     </div>
   );
 
   return (
-    <main className="min-h-screen flex flex-col bg-white dark:bg-[#0a0b14]">
-      <Header />
+    <main className="min-h-screen flex flex-col bg-[#05060a]">
+      <Header onOpenCart={() => { }} />
       <Banner banners={banners} />
 
-      <section className="container mx-auto px-4 py-10 flex-grow">
+      <section className="max-w-7xl mx-auto px-4 py-10 flex-grow w-full">
         <div className="mb-10">
-          <p className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em] mb-4">Departamentos</p>
+          <p className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em] mb-4 pl-2">
+            Navegue por Categorias
+          </p>
           <CategoryBar
             categories={categories}
             selectedCategory={selectedCategory}
@@ -61,16 +68,28 @@ export default function Home() {
           />
         </div>
 
-        <h2 className="text-3xl font-black mb-8 dark:text-white">Mais Pedidos</h2>
+        {/* Título Dinâmico */}
+        <div className="flex items-center gap-4 mb-8">
+          <h2 className="text-3xl font-black text-white italic tracking-tighter">
+            {selectedCategory === "todos" ? "MAIS" : "CATEGORIA"} <span className="text-brand-blue uppercase">{currentCategoryName}</span>
+          </h2>
+          <div className="h-[2px] flex-1 bg-gradient-to-r from-brand-blue/50 to-transparent rounded-full"></div>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredProducts.map((p: any) => (
-            <ProductCard key={p.id} product={p} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product: any) => (
+            <ProductCard key={product.id} product={product} />
           ))}
+
+          {filteredProducts.length === 0 && (
+            <div className="col-span-full text-center py-20 text-gray-500">
+              <p>Nenhum produto encontrado nesta categoria.</p>
+            </div>
+          )}
         </div>
       </section>
 
-      <Footer />
+      <Footer config={null} />
       <FloatingCart />
     </main>
   );

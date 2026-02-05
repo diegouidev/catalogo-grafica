@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -19,6 +19,19 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     inlines = [VariantInline]
     readonly_fields = ('views_count',)
+    filter_horizontal = ('finishings',)
 
 admin.site.register(Banner)
 admin.site.register(CompanyConfig)
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ('code', 'discount_percentage', 'is_active')
+    search_fields = ('code',)
+    list_filter = ('is_active',)
+
+
+@admin.register(Finishing)
+class FinishingAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
