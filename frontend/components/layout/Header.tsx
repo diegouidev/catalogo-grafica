@@ -22,13 +22,6 @@ export default function Header() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        >
-                            {theme === "dark" ? <Sun size={22} /> : <Moon size={22} />}
-                        </button>
-
                         <button onClick={() => setIsCartOpen(true)} className="relative p-2">
                             <ShoppingCart size={24} className="text-brand-blue" />
                             {cart.length > 0 && (

@@ -14,70 +14,73 @@ class FinishingSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, read_only=True)
-    finishings = FinishingSerializer(many=True, read_only=True)
+    finishings = FinishingSerializer(many=True, read_only=True) # Leitura (objetos completos)
     category_name = serializers.ReadOnlyField(source='category.name')
     category_slug = serializers.ReadOnlyField(source='category.slug')
-
+    
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'description', 'image', 
             'production_time', 'category', 'category_name', 
-            'variants', 'views_count', 'category_slug', 
-            'is_featured', 'finishings',
+            'variants', 'finishings', 'is_featured', # Adicione finishings aqui
+            'views_count', 'category_slug'
         ]
 
     def create(self, validated_data):
-        # 1. Captura o JSON das variantes
         request = self.context.get('request')
         variants_data = request.data.get('variants_json')
+        finishings_data = request.data.get('finishings_json') # Captura o JSON de IDs
         
-        # 2. Cria o produto primeiro
         product = Product.objects.create(**validated_data)
         
-        # 3. Processa e cria as variantes vinculadas (ProductVariant)
+        # Salva Variantes
         if variants_data:
             try:
                 variants_list = json.loads(variants_data)
                 for variant in variants_list:
-                    # Corrigido para ProductVariant
                     ProductVariant.objects.create(
-                        product=product,
-                        name=variant.get('name'),
-                        price=variant.get('price')
+                        product=product, name=variant.get('name'), price=variant.get('price')
                     )
+            except: pass
+
+        # Salva Acabamentos
+        if finishings_data:
+            try:
+                finishings_ids = json.loads(finishings_data) # Espera uma lista de IDs [1, 2, 5]
+                product.finishings.set(finishings_ids)
             except Exception as e:
-                print(f"Erro ao processar variantes: {e}")
+                print(f"Erro acabamentos: {e}")
                 
         return product
 
-
     def update(self, instance, validated_data):
-        # 1. Captura o JSON das variantes do request
         request = self.context.get('request')
         variants_data = request.data.get('variants_json')
-        
-        # 2. Atualiza os campos básicos do produto (nome, descrição, etc)
-        # O Django Rest Framework cuida para não sobrescrever a imagem se ela não for enviada (PATCH)
+        finishings_data = request.data.get('finishings_json')
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-        
-        # 3. Atualiza as variantes vinculadas
+
+        # Atualiza Variantes
         if variants_data:
             try:
                 variants_list = json.loads(variants_data)
-                # Lógica simples: removemos as variantes antigas e criamos as novas enviadas
                 instance.variants.all().delete()
-                for variant in variants_list:
+                for v in variants_list:
                     ProductVariant.objects.create(
-                        product=instance,
-                        name=variant.get('name'),
-                        price=variant.get('price')
+                        product=instance, name=v.get('name'), price=v.get('price')
                     )
-            except Exception as e:
-                print(f"Erro ao atualizar variantes: {e}")
-                
+            except: pass
+            
+        # Atualiza Acabamentos
+        if finishings_data:
+            try:
+                finishings_ids = json.loads(finishings_data)
+                instance.finishings.set(finishings_ids)
+            except: pass
+
         return instance
 
 class CategorySerializer(serializers.ModelSerializer):

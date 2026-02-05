@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Category, Product, Banner, CompanyConfig, Coupon
-from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer
+from .models import Category, Product, Banner, CompanyConfig, Coupon, Finishing
+from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer, FinishingSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -99,3 +99,13 @@ class CouponViewSet(viewsets.ReadOnlyModelViewSet):
             })
         except Coupon.DoesNotExist:
             return Response({'error': 'Cupom inválido'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class FinishingViewSet(viewsets.ModelViewSet):
+    queryset = Finishing.objects.all()
+    serializer_class = FinishingSerializer
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated()]
+        return []
