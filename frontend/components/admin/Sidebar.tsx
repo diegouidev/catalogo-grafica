@@ -9,7 +9,8 @@ import {
     Image as ImageIcon,
     Settings,
     LogOut,
-    Ticket, // Ícone para os cupons
+    Ticket,
+    Layers,
     ExternalLink
 } from "lucide-react";
 import Cookies from 'js-cookie';
@@ -23,6 +24,7 @@ export default function Sidebar() {
         { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
         { name: "Produtos", icon: Package, path: "/admin/produtos" },
         { name: "Categorias", icon: Tags, path: "/admin/categorias" },
+        { name: "Acabamentos", icon: Layers, path: "/admin/acabamentos" },
         { name: "Banners", icon: ImageIcon, path: "/admin/banners" },
         { name: "Cupons", icon: Ticket, path: "/admin/cupons" }, // Novo item adicionado
         { name: "Configurações", icon: Settings, path: "/admin/configuracoes" },
