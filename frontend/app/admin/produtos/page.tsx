@@ -23,7 +23,8 @@ export default function ProductAdmin() {
     const [variants, setVariants] = useState([{ name: "", price: "" }]);
     const [selectedFinishings, setSelectedFinishings] = useState<number[]>([]); // IDs selecionados
 
-    const API_URL = "http://127.0.0.1:8000/api";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL; 
+// Como a variável já termina em /api, você pode usar direto ou `${process.env.NEXT_PUBLIC_API_URL}`
     const token = Cookies.get('auth_token');
 
     const fetchData = useCallback(async () => {

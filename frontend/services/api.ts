@@ -1,4 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL_ENV = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+// Remove o /api do final se existir, para termos apenas o host para as imagens
+// Ex: http://localhost:8000/api -> http://localhost:8000
+export const API_BASE_URL = API_URL_ENV.replace('/api', '');
+
+// Mantém a URL completa para as chamadas de dados
+const API_URL = API_URL_ENV;
 
 // Busca a lista de banners ativos para o carrossel
 export const getBanners = async () => {
@@ -7,12 +14,12 @@ export const getBanners = async () => {
     return res.json();
 };
 
-// Busca as configurações da empresa (Redes sociais, Mapa, WhatsApp)
+// Busca as configurações da empresa
 export const getCompanyConfig = async () => {
     const res = await fetch(`${API_URL}/company-config/`, { next: { revalidate: 600 } });
     if (!res.ok) return null;
     const data = await res.json();
-    return data[0]; // Retorna apenas o primeiro registro de configuração
+    return data[0];
 };
 
 export const getProducts = async (params?: string) => {

@@ -3,11 +3,22 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Clock, CheckCircle2, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { API_BASE_URL } from "@/services/api"; // <--- Importação da Fonte da Verdade
 
 export default function ProductCard({ product }: { product: any }) {
     const { addToCart } = useCart();
     const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Lógica centralizada usando a variável de ambiente
+    const getImageUrl = (path: string) => {
+        if (!path) return "/placeholder.png";
+        if (path.startsWith("http")) return path;
+        // Garante que não duplique barras se a API_BASE_URL já tiver
+        const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+        const imagePath = path.startsWith('/') ? path : `/${path}`;
+        return `${baseUrl}${imagePath}`;
+    };
 
     const handleAdd = () => {
         addToCart(product, selectedVariant);
@@ -31,9 +42,12 @@ export default function ProductCard({ product }: { product: any }) {
                     onClick={() => setIsModalOpen(true)}
                 >
                     <img
-                        src={product.image}
+                        src={getImageUrl(product.image)}
                         alt={product.name}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x400?text=Sem+Imagem";
+                        }}
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Eye className="text-white" size={32} />
@@ -57,7 +71,6 @@ export default function ProductCard({ product }: { product: any }) {
                         {product.name}
                     </h3>
 
-                    {/* ACABAMENTOS (Novidade) */}
                     {product.finishings && product.finishings.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-4">
                             {product.finishings.map((finish: any, index: number) => (
@@ -84,8 +97,8 @@ export default function ProductCard({ product }: { product: any }) {
                                     setSelectedVariant(variant);
                                 }}
                             >
-                                {product.variants.map((v: any) => (
-                                    <option key={v.id} value={v.id} className="dark:bg-brand-navy">
+                                {product.variants?.map((v: any) => (
+                                    <option key={v.id} value={v.id} className="dark:bg-brand-navy text-black">
                                         {v.name} Uni - R$ {Number(v.price).toFixed(2)}
                                     </option>
                                 ))}
@@ -112,13 +125,18 @@ export default function ProductCard({ product }: { product: any }) {
                 </div>
             </div>
 
-            {/* Modal de Zoom da Imagem */}
+            {/* Modal de Zoom */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsModalOpen(false)}>
                     <button className="absolute top-5 right-5 text-white bg-white/10 p-2 rounded-full hover:bg-red-500 transition-colors">
                         <X size={24} />
                     </button>
-                    <img src={product.image} alt={product.name} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} />
+                    <img
+                        src={getImageUrl(product.image)}
+                        alt={product.name}
+                        className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl"
+                        onClick={e => e.stopPropagation()}
+                    />
                 </div>
             )}
         </>

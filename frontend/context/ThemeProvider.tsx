@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { type ThemeProviderProps } from "next-themes/dist/types";
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+// Correção: Inferir os tipos diretamente do componente em vez de importar de 'dist/types'
+export function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
     return (
         <NextThemesProvider
             attribute="class"

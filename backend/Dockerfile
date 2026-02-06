@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . .
 
 # Comando para rodar migrations e subir o servidor de produção
-CMD ["sh", "-c", "python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"]

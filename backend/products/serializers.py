@@ -1,6 +1,7 @@
 from rest_framework import serializers
 import json
 from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing
+from django.conf import settings
 
 class VariantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,27 +15,34 @@ class FinishingSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, read_only=True)
-    finishings = FinishingSerializer(many=True, read_only=True) # Leitura (objetos completos)
+    finishings = FinishingSerializer(many=True, read_only=True)
     category_name = serializers.ReadOnlyField(source='category.name')
     category_slug = serializers.ReadOnlyField(source='category.slug')
+    # Forçamos a imagem a ser um SerializerMethodField para controlar a URL
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
         fields = [
             'id', 'name', 'description', 'image', 
             'production_time', 'category', 'category_name', 
-            'variants', 'finishings', 'is_featured', # Adicione finishings aqui
+            'variants', 'finishings', 'is_featured',
             'views_count', 'category_slug'
         ]
+
+    def get_image(self, obj):
+        # Retorna o caminho absoluto da URL (ex: /media/products/img.jpg)
+        if obj.image:
+            return f"{settings.MEDIA_URL}{obj.image}"
+        return None
 
     def create(self, validated_data):
         request = self.context.get('request')
         variants_data = request.data.get('variants_json')
-        finishings_data = request.data.get('finishings_json') # Captura o JSON de IDs
+        finishings_data = request.data.get('finishings_json')
         
         product = Product.objects.create(**validated_data)
         
-        # Salva Variantes
         if variants_data:
             try:
                 variants_list = json.loads(variants_data)
@@ -44,10 +52,9 @@ class ProductSerializer(serializers.ModelSerializer):
                     )
             except: pass
 
-        # Salva Acabamentos
         if finishings_data:
             try:
-                finishings_ids = json.loads(finishings_data) # Espera uma lista de IDs [1, 2, 5]
+                finishings_ids = json.loads(finishings_data)
                 product.finishings.set(finishings_ids)
             except Exception as e:
                 print(f"Erro acabamentos: {e}")
@@ -63,7 +70,6 @@ class ProductSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        # Atualiza Variantes
         if variants_data:
             try:
                 variants_list = json.loads(variants_data)
@@ -74,7 +80,6 @@ class ProductSerializer(serializers.ModelSerializer):
                     )
             except: pass
             
-        # Atualiza Acabamentos
         if finishings_data:
             try:
                 finishings_ids = json.loads(finishings_data)
@@ -89,7 +94,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug', 'products_count']
-        # Torna o slug opcional no envio, pois vamos gerá-lo aqui
         extra_kwargs = {'slug': {'required': False}}
 
     def create(self, validated_data):
@@ -100,9 +104,16 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class BannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Banner
         fields = ['id', 'title', 'subtitle', 'image', 'order']
+
+    def get_image(self, obj):
+        if obj.image:
+            return f"{settings.MEDIA_URL}{obj.image}"
+        return None
 
 class CompanyConfigSerializer(serializers.ModelSerializer):
     class Meta:

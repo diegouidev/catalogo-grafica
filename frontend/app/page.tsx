@@ -53,7 +53,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex flex-col bg-[#05060a]">
-      <Header onOpenCart={() => { }} />
+      {/* CORREÇÃO: Header não recebe props pois gerencia o state internamente */}
+      <Header />
       <Banner banners={banners} />
 
       <section className="max-w-7xl mx-auto px-4 py-10 flex-grow w-full">

@@ -12,7 +12,7 @@ export default function CategoryAdmin() {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [categoryName, setCategoryName] = useState("");
 
-    const API_URL = "http://127.0.0.1:8000/api/categories/";
+    const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/categories/`;
     const token = Cookies.get('auth_token'); // Busca o token correto definido no seu layout.tsx
 
     // 1. LISTAR CATEGORIAS (READ)

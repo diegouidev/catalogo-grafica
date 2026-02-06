@@ -10,7 +10,7 @@ export default function FinishingsAdmin() {
     const [name, setName] = useState("");
     const [editingId, setEditingId] = useState<number | null>(null);
 
-    const API_URL = "http://127.0.0.1:8000/api/finishings/";
+    const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/finishings/`;
     const token = Cookies.get('auth_token');
 
     const loadFinishings = useCallback(async () => {

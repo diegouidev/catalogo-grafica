@@ -25,13 +25,7 @@ export default function Footer({ config }: { config: any }) {
                     </div>
 
                     {/* Coluna 3: Localização */}
-                    <div className="rounded-2xl overflow-hidden h-40 border border-gray-200 dark:border-gray-800">
-                        {config?.map_iframe ? (
-                            <div dangerouslySetInnerHTML={{ __html: config?.map_iframe }} className="w-full h-full" />
-                        ) : (
-                            <div className="bg-gray-100 w-full h-full flex items-center justify-center"><MapPin /></div>
-                        )}
-                    </div>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4939.715571227582!2d-38.58576492412366!3d-3.8532483438218366!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7c753627cb76715%3A0x254dc1fcbedeaa31!2sGr%C3%A1fica%20R%C3%A1pida%20-%20Cloud%20Design!5e1!3m2!1spt-BR!2sbr!4v1770399942262!5m2!1spt-BR!2sbr" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
 
                 <div className="border-t border-gray-100 dark:border-gray-800 pt-8 text-center text-sm text-gray-400">

@@ -7,7 +7,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const API_BASE = "http://127.0.0.1:8000";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -16,7 +16,7 @@ export default function DashboardPage() {
             return;
         }
 
-        fetch(`${API_BASE}/api/dashboard/stats/`, {
+        fetch(`${API_URL}/api/dashboard/stats/`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => {
