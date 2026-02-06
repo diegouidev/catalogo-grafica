@@ -7,7 +7,8 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const BASE_URL = API_URL.replace(/\/api$/, "");
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -16,7 +17,7 @@ export default function DashboardPage() {
             return;
         }
 
-        fetch(`${API_URL}/api/dashboard/stats/`, {
+        fetch(`${API_URL}/dashboard/stats/`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => {
@@ -72,7 +73,7 @@ export default function DashboardPage() {
                         {stats.ranking.map((prod: any, index: number) => {
                             const imageUrl = prod.image?.startsWith('http')
                                 ? prod.image
-                                : `${API_BASE}${prod.image}`;
+                                : `${BASE_URL}${prod.image}`;
 
                             return (
                                 <div key={prod.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-brand-blue/30 transition-all group">
