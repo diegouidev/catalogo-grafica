@@ -1,33 +1,19 @@
 "use client";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
-import { ShoppingCart, Clock, CheckCircle2, Eye, X, Layers } from "lucide-react";
+import { ShoppingCart, Clock, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { API_BASE_URL } from "@/services/api"; // <--- Importação da Fonte da Verdade
+import { getImageUrl } from "@/services/api"; // <--- Importe a função nova
 
 export default function ProductCard({ product }: { product: any }) {
     const { addToCart } = useCart();
     const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Lógica centralizada usando a variável de ambiente
-    const getImageUrl = (path: string) => {
-        if (!path) return "/placeholder.png";
-        if (path.startsWith("http")) return path;
-        // Garante que não duplique barras se a API_BASE_URL já tiver
-        const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-        const imagePath = path.startsWith('/') ? path : `/${path}`;
-        return `${baseUrl}${imagePath}`;
-    };
-
     const handleAdd = () => {
         addToCart(product, selectedVariant);
         toast.success("Adicionado ao carrinho!", {
-            style: {
-                background: '#00AEEF',
-                color: '#fff',
-                fontWeight: 'bold'
-            },
+            style: { background: '#00AEEF', color: '#fff', fontWeight: 'bold' },
             icon: '🛒'
         });
     };
@@ -42,14 +28,12 @@ export default function ProductCard({ product }: { product: any }) {
                     onClick={() => setIsModalOpen(true)}
                 >
                     <img
-                        src={getImageUrl(product.image)}
+                        src={getImageUrl(product.image)} // <--- Uso simplificado e corrigido
                         alt={product.name}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                            // 1. ANULA o evento para impedir o loop infinito
-                            e.currentTarget.onerror = null;
-                            // 2. Aponta para uma imagem local que certeza que existe
-                            e.currentTarget.src = "/logo-oficial.png";
+                            e.currentTarget.onerror = null; // Previne loop
+                            e.currentTarget.src = "/logo-oficial.png"; // Fallback local
                         }}
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -57,7 +41,8 @@ export default function ProductCard({ product }: { product: any }) {
                     </div>
                 </div>
 
-                {/* Conteúdo */}
+                {/* ... (Resto do componente ProductCard igual ao anterior) ... */}
+
                 <div className="flex flex-col flex-1">
                     <div className="flex justify-between items-start mb-2">
                         <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/10 px-2 py-1 rounded-lg">
@@ -90,7 +75,6 @@ export default function ProductCard({ product }: { product: any }) {
                         <span>Produção: {product.production_time}</span>
                     </div>
 
-                    {/* Seletor de Variante e Preço */}
                     <div className="mt-auto space-y-4">
                         <div className="bg-black/20 p-3 rounded-xl border border-white/5">
                             <select
@@ -117,10 +101,7 @@ export default function ProductCard({ product }: { product: any }) {
                                 <span className="text-[10px] text-gray-500 font-bold pt-2">Quant. {selectedVariant?.name} Uni</span>
                             </div>
                         </div>
-                        <button
-                            onClick={handleAdd}
-                            className="w-full justify-center bg-brand-blue hover:bg-brand-blue/80 text-white px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-brand-blue/20 transition-all active:scale-95"
-                        >
+                        <button onClick={handleAdd} className="w-full justify-center bg-brand-blue hover:bg-brand-blue/80 text-white px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-brand-blue/20 transition-all active:scale-95">
                             <ShoppingCart size={18} />
                             Adicionar ao Carrinho
                         </button>
@@ -128,18 +109,10 @@ export default function ProductCard({ product }: { product: any }) {
                 </div>
             </div>
 
-            {/* Modal de Zoom */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsModalOpen(false)}>
-                    <button className="absolute top-5 right-5 text-white bg-white/10 p-2 rounded-full hover:bg-red-500 transition-colors">
-                        <X size={24} />
-                    </button>
-                    <img
-                        src={getImageUrl(product.image)}
-                        alt={product.name}
-                        className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl"
-                        onClick={e => e.stopPropagation()}
-                    />
+                    <button className="absolute top-5 right-5 text-white bg-white/10 p-2 rounded-full hover:bg-red-500 transition-colors"><X size={24} /></button>
+                    <img src={getImageUrl(product.image)} alt={product.name} className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl" onClick={e => e.stopPropagation()} />
                 </div>
             )}
         </>

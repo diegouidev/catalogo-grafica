@@ -1,41 +1,55 @@
 const API_URL_ENV = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-// Remove o /api do final se existir, para termos apenas o host para as imagens
-// Ex: http://localhost:8000/api -> http://localhost:8000
+// Remove o /api do final para pegar a raiz do site
+// Ex: https://seu-site.com.br/api -> https://seu-site.com.br
 export const API_BASE_URL = API_URL_ENV.replace('/api', '');
 
-// Mantém a URL completa para as chamadas de dados
-const API_URL = API_URL_ENV;
+// --- NOVA FUNÇÃO ROBUSTA DE IMAGEM ---
+export const getImageUrl = (path: string | null | undefined) => {
+    if (!path) return "/logo-oficial.png"; // Fallback local seguro
 
-// Busca a lista de banners ativos para o carrossel
+    // Se já for uma URL completa (ex: bucket S3 ou link externo), retorna ela
+    if (path.startsWith("http")) return path;
+
+    // Remove barra inicial se tiver para evitar duplicidade //
+    let cleanPath = path.startsWith('/') ? path.slice(1) : path;
+
+    // A CORREÇÃO DE OURO:
+    // Se o caminho vindo do banco for "products/foto.jpg", adicionamos "media/"
+    // O Nginx precisa desse prefixo para saber que é um arquivo de upload
+    if (!cleanPath.startsWith('media/')) {
+        cleanPath = `media/${cleanPath}`;
+    }
+
+    // Retorna: https://seu-site.com.br/media/products/foto.jpg
+    return `${API_BASE_URL}/${cleanPath}`;
+};
+
+// ... (Mantenha as funções getBanners, getProducts, etc como estavam)
 export const getBanners = async () => {
-    const res = await fetch(`${API_URL}/banners/`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API_URL_ENV}/banners/`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
     return res.json();
 };
 
-// Busca as configurações da empresa
-export const getCompanyConfig = async () => {
-    const res = await fetch(`${API_URL}/company-config/`, { next: { revalidate: 600 } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data[0];
-};
-
 export const getProducts = async (params?: string) => {
     const query = params ? `?${params}` : '';
-    const res = await fetch(`${API_URL}/products/${query}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL_ENV}/products/${query}`, { next: { revalidate: 60 } });
     if (!res.ok) throw new Error('Falha ao carregar produtos');
     return res.json();
 };
 
 export const getCategories = async () => {
-    const res = await fetch(`${API_URL}/categories/`);
+    const res = await fetch(`${API_URL_ENV}/categories/`);
     if (!res.ok) return [];
     return res.json();
 };
 
-export const formatWhatsAppLink = (message: string, phone: string = "5585998532868") => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    return `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+export const getCompanyConfig = async () => {
+    try {
+        const res = await fetch(`${API_URL_ENV}/company-config/`, { next: { revalidate: 600 } });
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data[0];
+    } catch { return null; }
 };
