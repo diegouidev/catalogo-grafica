@@ -15,7 +15,12 @@ export default function CouponAdmin() {
         discount_percentage: ""
     });
 
-    const API_URL = "http://127.0.0.1:8000/api/coupons/";
+    // --- AJUSTE AQUI ---
+    // Pega a URL do .env (Produção) ou usa localhost (Desenvolvimento)
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+    // Garante que não tenha barra duplicada e adiciona o endpoint
+    const API_URL = `${API_BASE.replace(/\/$/, '')}/coupons/`;
+    
     const token = Cookies.get('auth_token');
 
     const loadCoupons = useCallback(async () => {
@@ -24,9 +29,10 @@ export default function CouponAdmin() {
             const data = await res.json();
             setCoupons(data);
         } catch (error) {
+            console.error(error);
             toast.error("Erro ao carregar cupons");
         }
-    }, []);
+    }, [API_URL]); // Adicionado API_URL na dependência
 
     useEffect(() => { loadCoupons(); }, [loadCoupons]);
 
