@@ -8,8 +8,10 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432" # Porta do Banco (Isolada da 5432)
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data_cloud_design:/var/lib/postgresql/data/
 
   backend:
     build: ./backend
@@ -18,7 +20,7 @@ services:
     depends_on:
       - db
     ports:
-      - "8000:8000"
+      - "8002:8000" # Porta do Backend (Isolada da 8000/8001)
     volumes:
       - ./backend/media:/app/media
 
@@ -29,9 +31,9 @@ services:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     restart: always
     ports:
-      - "3000:3000"
+      - "3001:3000" # Porta do Frontend (Isolada da 3000)
     depends_on:
       - backend
 
 volumes:
-  postgres_data:
+  postgres_data_cloud_design: # Volume de dados isolado
