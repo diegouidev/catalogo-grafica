@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket, Receipt } from "lucide-react";
+import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { getImageUrl } from "@/services/api"; // <--- 1. Importação Adicionada
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const { cart, removeFromCart, coupon, applyCoupon, removeCoupon } = useCart();
@@ -20,7 +21,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                 setCustomerData({ name: savedName || "", phone: savedPhone || "" });
             }
 
-            fetch("http://127.0.0.1:8000/api/company-config/")
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+
+            fetch(`${apiUrl}/company-config/`)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data.length > 0) {
@@ -51,14 +54,13 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         }
 
         if (!whatsappNumber) {
+            // Fallback caso a API falhe
             return toast.error("Número da gráfica não encontrado. 📞");
         }
 
         localStorage.setItem("@CloudDesign:customerName", customerData.name);
         localStorage.setItem("@CloudDesign:customerPhone", customerData.phone);
 
-        // Montando a mensagem com quebras de linha explícitas (\n) e emojis padrão
-        // Removi os asteriscos colados nos emojis para evitar erro de formatação
         let message = `🚀 *NOVO PEDIDO - CLOUD DESIGN*\n\n`;
         message += `👤 *CLIENTE:* ${customerData.name}\n`;
         message += `📞 *WHATSAPP:* ${customerData.phone}\n\n`;
@@ -81,7 +83,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         message += `\n✅ *TOTAL FINAL: R$ ${total.toFixed(2)}*`;
         message += `\n\n_Aguardando confirmação para iniciar a produção!_ 🎨`;
 
-        // O segredo está em garantir que o link não tenha espaços duplos antes de codificar
         const cleanMessage = message.trim();
         const encodedMessage = encodeURIComponent(cleanMessage);
 
@@ -106,9 +107,20 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                             ) : (
                                 cart.map((item: any, index: number) => (
                                     <div key={index} className="flex gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 group animate-in fade-in slide-in-from-right-4">
+
+                                        {/* --- 2. Lógica da Imagem Corrigida --- */}
                                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 shrink-0">
-                                            <img src={item.image} className="w-full h-full object-cover" />
+                                            <img
+                                                src={getImageUrl(item.image)}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.src = "/logo-oficial.png";
+                                                }}
+                                            />
                                         </div>
+                                        {/* ----------------------------------- */}
+
                                         <div className="flex-1 min-w-0">
                                             <h4 className="text-white font-bold text-sm truncate mb-1">{item.name}</h4>
                                             <div className="flex justify-between items-center">
