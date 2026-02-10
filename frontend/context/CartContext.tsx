@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "react-hot-toast";
 
-// --- CORREÇÃO: Pega a URL do .env ou usa localhost ---
+// Pega a URL do .env ou usa localhost como fallback
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
 
 interface CartContextType {
@@ -11,7 +11,7 @@ interface CartContextType {
     removeFromCart: (index: number) => void;
     clearCart: () => void;
     coupon: any | null;
-    applyCoupon: (code: string) => Promise<any>; // Retorna promessa com resultado
+    applyCoupon: (code: string) => Promise<any>;
     removeCoupon: () => void;
 }
 
@@ -21,24 +21,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [cart, setCart] = useState<any[]>([]);
     const [coupon, setCoupon] = useState<any | null>(null);
 
-    // Carrega carrinho do localStorage ao iniciar
+    // Carrega carrinho e cupom do localStorage ao iniciar
     useEffect(() => {
-        const savedCart = localStorage.getItem("@CloudDesign:cart");
-        if (savedCart) setCart(JSON.parse(savedCart));
-        
-        const savedCoupon = localStorage.getItem("@CloudDesign:coupon");
-        if (savedCoupon) setCoupon(JSON.parse(savedCoupon));
+        if (typeof window !== "undefined") {
+            const savedCart = localStorage.getItem("@CloudDesign:cart");
+            if (savedCart) setCart(JSON.parse(savedCart));
+            
+            const savedCoupon = localStorage.getItem("@CloudDesign:coupon");
+            if (savedCoupon) setCoupon(JSON.parse(savedCoupon));
+        }
     }, []);
 
     // Salva carrinho sempre que mudar
     useEffect(() => {
-        localStorage.setItem("@CloudDesign:cart", JSON.stringify(cart));
+        if (typeof window !== "undefined") {
+            localStorage.setItem("@CloudDesign:cart", JSON.stringify(cart));
+        }
     }, [cart]);
 
     // Salva cupom sempre que mudar
     useEffect(() => {
-        if (coupon) localStorage.setItem("@CloudDesign:coupon", JSON.stringify(coupon));
-        else localStorage.removeItem("@CloudDesign:coupon");
+        if (typeof window !== "undefined") {
+            if (coupon) localStorage.setItem("@CloudDesign:coupon", JSON.stringify(coupon));
+            else localStorage.removeItem("@CloudDesign:coupon");
+        }
     }, [coupon]);
 
     const addToCart = (product: any, variant: any) => {
@@ -54,20 +60,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setCoupon(null);
     };
 
-    // --- AQUI ESTAVA O PROBLEMA ---
+    // --- FUNÇÃO CORRIGIDA ---
     const applyCoupon = async (code: string) => {
         try {
-            // Agora usa a variável dinâmica API_BASE_URL
-            const res = await fetch(`${API_BASE_URL}/coupons/validate/?code=${code}`);
-            const data = await res.json();
-
-            if (res.ok && data.valid) {
-                setCoupon({ code: data.code, discount: data.discount_percentage });
-                return { success: true, discount: data.discount_percentage };
-            } else {
+            // Remove espaços e deixa maiúsculo para evitar erros bobos
+            const cleanCode = code.trim().toUpperCase(); 
+            
+            const res = await fetch(`${API_BASE_URL}/coupons/validate/?code=${cleanCode}`);
+            
+            // Se o backend retornar 404 ou 400, já sabemos que falhou
+            if (!res.ok) {
                 setCoupon(null);
                 return { success: false };
             }
+
+            const data = await res.json();
+            console.log("Resposta do Cupom:", data); // Debug no console
+
+            // Lógica mais flexível:
+            // Aceita se tiver 'valid: true' OU se tiver 'discount_percentage' direto na resposta
+            if (data.valid === true || (data.discount_percentage !== undefined && data.discount_percentage !== null)) {
+                
+                const finalDiscount = data.discount_percentage;
+                
+                setCoupon({ 
+                    code: data.code || cleanCode, 
+                    discount: finalDiscount 
+                });
+                
+                return { success: true, discount: finalDiscount };
+            } else {
+                // Deu 200 OK mas não veio dados úteis
+                setCoupon(null);
+                return { success: false };
+            }
+
         } catch (error) {
             console.error("Erro ao validar cupom:", error);
             setCoupon(null);
