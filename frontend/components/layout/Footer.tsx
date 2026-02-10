@@ -33,7 +33,7 @@ export default function Footer({ config }: { config: any }) {
                     {/* Coluna 3: Logo */}
                     <div className="flex items-center justify-center">
                         <img
-                            src="/caminho-da-sua-logo.png"
+                            src="/logo01-branca.png"
                             alt="Cloud Design"
                             className="max-w-full h-auto"
                         />
