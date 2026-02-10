@@ -46,7 +46,10 @@ export default function ProductCard({ product }: { product: any }) {
                         alt={product.name}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                            (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x400?text=Sem+Imagem";
+                            // 1. ANULA o evento para impedir o loop infinito
+                            e.currentTarget.onerror = null;
+                            // 2. Aponta para uma imagem local que certeza que existe
+                            e.currentTarget.src = "/logo-oficial.png";
                         }}
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
