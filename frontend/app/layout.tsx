@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Suspense } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import Analytics from "@/components/Analytics";
@@ -16,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <CartProvider>
-            <Analytics />
+            <Suspense fallback={null}>
+                <Analytics />
+            </Suspense>
             {children}
             <Toaster position="bottom-center" /> {/* Adicione aqui */}
           </CartProvider>
