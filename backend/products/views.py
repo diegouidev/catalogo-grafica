@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,11 +19,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return []
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['views_count', 'id']
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['category__slug', 'is_featured'] # Permite ?category__slug=adesivos
+    search_fields = ['name', 'description']
 
     @action(detail=True, methods=['post'])
     def increment_view(self, request, pk=None):

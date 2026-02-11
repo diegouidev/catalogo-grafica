@@ -18,7 +18,7 @@ class Finishing(models.Model):
 class Product(models.Model):
     category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to='products/')
     production_time = models.CharField(max_length=50, help_text="Ex: 2 dias úteis, 5 horas") # Novo campo
     is_active = models.BooleanField(default=True)
@@ -53,8 +53,10 @@ class CompanyConfig(models.Model):
     name = models.CharField(max_length=100, default="Cloud Design")
     whatsapp = models.CharField(max_length=20)
     instagram = models.CharField(max_length=100)
-    address = models.TextField()
-    map_iframe = models.TextField(help_text="Cole aqui o iframe do Google Maps")
+    address = models.TextField(null=True, blank=True)
+    facebook_pixel_id = models.CharField(max_length=50, blank=True, null=True, help_text="Ex: 1234567890")
+    google_analytics_id = models.CharField(max_length=50, blank=True, null=True, help_text="Ex: G-XXXXXXXXXX")
+    map_iframe = models.TextField(null=True, blank=True, help_text="Cole aqui o iframe do Google Maps")
 
     def __str__(self):
         return self.name

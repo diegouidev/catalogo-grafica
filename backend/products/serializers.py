@@ -118,7 +118,7 @@ class BannerSerializer(serializers.ModelSerializer):
 class CompanyConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyConfig
-        fields = ['name', 'whatsapp', 'instagram', 'address', 'map_iframe']
+        fields = ['name', 'whatsapp', 'instagram', 'address', 'map_iframe', 'facebook_pixel_id', 'google_analytics_id']
 
 
 class CouponSerializer(serializers.ModelSerializer):
