@@ -34,19 +34,18 @@ export const getBanners = async () => {
 
 export const getProducts = async (categorySlug?: string, searchTerm?: string) => {
     // Monta a Query String dinamicamente
-    const params = new URLSearchParams();
-    
+    const params = new URLSearchParams();   
+    // Se tiver categoria e não for 'todos', adiciona
     if (categorySlug && categorySlug !== 'todos') {
         params.append('category__slug', categorySlug);
-    }
-    
+    }   
+    // Se tiver termo de busca, adiciona
     if (searchTerm) {
         params.append('search', searchTerm);
     }
-
     const queryString = params.toString();
-    const url = `${API_URL}/products/?${queryString}`;
-
+    // CORREÇÃO AQUI: Usando API_URL_ENV em vez de API_URL
+    const url = `${API_URL_ENV}/products/?${queryString}`;
     const res = await fetch(url, { next: { revalidate: 0 } }); // 0 para busca em tempo real
     if (!res.ok) throw new Error('Falha ao carregar produtos');
     return res.json();
