@@ -24,7 +24,7 @@ class Product(models.Model):
     production_time = models.CharField(max_length=50, help_text="Ex: 2 dias úteis, 5 horas") # Novo campo
     is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0)
-    slug = models.SlugField(unique=True, blank=True, max_length=250, help_text="URL amigável para SEO")
+    slug = models.SlugField(null=True, blank=True, max_length=250)
     is_featured = models.BooleanField(default=False, verbose_name="Destaque")
     finishings = models.ManyToManyField(Finishing, blank=True, verbose_name="Acabamentos")
     
