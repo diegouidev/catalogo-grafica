@@ -19,14 +19,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return []
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
+    queryset = Product.objects.all().order_by('-id')
     serializer_class = ProductSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['views_count', 'id']
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['category__slug', 'is_featured'] # Permite ?category__slug=adesivos
+    filterset_fields = ['category__slug', 'is_featured']
     search_fields = ['name', 'description']
 
     @action(detail=True, methods=['post'])

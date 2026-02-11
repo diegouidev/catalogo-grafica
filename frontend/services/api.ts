@@ -33,22 +33,48 @@ export const getBanners = async () => {
 };
 
 export const getProducts = async (categorySlug?: string, searchTerm?: string) => {
-    // Monta a Query String dinamicamente
-    const params = new URLSearchParams();   
-    // Se tiver categoria e não for 'todos', adiciona
+    const params = new URLSearchParams();
+    
     if (categorySlug && categorySlug !== 'todos') {
         params.append('category__slug', categorySlug);
-    }   
-    // Se tiver termo de busca, adiciona
+    }
+    
     if (searchTerm) {
         params.append('search', searchTerm);
     }
+
     const queryString = params.toString();
-    // CORREÇÃO AQUI: Usando API_URL_ENV em vez de API_URL
+    // Garante que a URL termina com barra antes dos parâmetros para evitar redirects do Django
     const url = `${API_URL_ENV}/products/?${queryString}`;
-    const res = await fetch(url, { next: { revalidate: 0 } }); // 0 para busca em tempo real
-    if (!res.ok) throw new Error('Falha ao carregar produtos');
-    return res.json();
+
+    try {
+        const res = await fetch(url, { 
+            next: { revalidate: 0 },
+            headers: {
+                'Content-Type': 'application/json',
+                // Às vezes ajuda a evitar cache agressivo
+                'Cache-Control': 'no-cache'
+            }
+        }); 
+
+        if (!res.ok) throw new Error('Falha ao carregar produtos');
+        
+        const data = await res.json();
+
+        // --- CORREÇÃO DE OURO ---
+        // Verifica se a resposta é paginada (tem 'results') ou se é uma lista direta
+        if (data.results && Array.isArray(data.results)) {
+            return data.results;
+        } else if (Array.isArray(data)) {
+            return data;
+        } else {
+            return []; // Retorna vazio se não entender o formato
+        }
+
+    } catch (error) {
+        console.error("Erro no getProducts:", error);
+        return []; // Evita quebrar a tela com erro
+    }
 };
 
 export const getCategories = async () => {
