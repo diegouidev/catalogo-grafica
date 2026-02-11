@@ -21,19 +21,19 @@ export default function Sidebar() {
     const router = useRouter();
 
     const menuItems = [
-        { name: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-        { name: "Produtos", icon: Package, path: "/admin/produtos" },
-        { name: "Categorias", icon: Tags, path: "/admin/categorias" },
-        { name: "Acabamentos", icon: Layers, path: "/admin/acabamentos" },
-        { name: "Banners", icon: ImageIcon, path: "/admin/banners" },
-        { name: "Cupons", icon: Ticket, path: "/admin/cupons" }, // Novo item adicionado
-        { name: "Configurações", icon: Settings, path: "/admin/configuracoes" },
+        { name: "Dashboard", icon: LayoutDashboard, path: "/painel/dashboard" },
+        { name: "Produtos", icon: Package, path: "/painel/produtos" },
+        { name: "Categorias", icon: Tags, path: "/painel/categorias" },
+        { name: "Acabamentos", icon: Layers, path: "/painel/acabamentos" },
+        { name: "Banners", icon: ImageIcon, path: "/painel/banners" },
+        { name: "Cupons", icon: Ticket, path: "/painel/cupons" },
+        { name: "Configurações", icon: Settings, path: "/painel/configuracoes" },
     ];
 
     const handleLogout = () => {
         Cookies.remove('auth_token');
         localStorage.removeItem("token");
-        router.push("/admin/login");
+        router.push("/painel/login"); // <--- Mudou de /admin/login para /painel/login
     };
 
     return (

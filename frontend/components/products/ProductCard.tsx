@@ -3,12 +3,16 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Clock, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getImageUrl } from "@/services/api"; // <--- Importe a função nova
+import { getImageUrl, registerView } from "@/services/api"; // <--- Importe a função nova
 
 export default function ProductCard({ product }: { product: any }) {
     const { addToCart } = useCart();
     const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const handleImageClick = () => {
+        setIsModalOpen(true);
+        registerView(product.id); // <--- Chama o backend
+    };
 
     const handleAdd = () => {
         addToCart(product, selectedVariant);
@@ -25,7 +29,7 @@ export default function ProductCard({ product }: { product: any }) {
                 {/* Imagem */}
                 <div
                     className="aspect-square w-full rounded-[1.5rem] overflow-hidden bg-black/20 mb-4 relative cursor-pointer group-hover:opacity-90 transition-opacity"
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={handleImageClick}
                 >
                     <img
                         src={getImageUrl(product.image)} // <--- Uso simplificado e corrigido

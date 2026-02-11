@@ -1,4 +1,3 @@
-// frontend/proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -6,19 +5,27 @@ export default function middleware(request: NextRequest) {
     const token = request.cookies.get('auth_token')?.value;
     const { pathname } = request.nextUrl;
 
-    // Se estiver no login e já tiver token, vai para a dashboard
-    if (pathname === '/admin/login' && token) {
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+    // 1. Redirecionar /admin para /painel (para o usuário não ficar perdido)
+    // Nota: Se você acessar /admin e o Nginx mandar para o Django, esse redirect nem acontece (o que é bom).
+    // Se o Nginx mandar para o Next, ele joga para o novo painel.
+    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/')) {
+         return NextResponse.redirect(new URL('/painel/login', request.url));
     }
 
-    // Se tentar acessar qualquer página admin sem token, volta para o login
-    if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !token) {
-        return NextResponse.redirect(new URL('/admin/login', request.url));
+    // 2. Se logado tentar ir pro login -> manda pra dashboard
+    if (pathname === '/painel/login' && token) {
+        return NextResponse.redirect(new URL('/painel/dashboard', request.url));
+    }
+
+    // 3. Proteger rotas do painel
+    if (pathname.startsWith('/painel') && pathname !== '/painel/login' && !token) {
+        return NextResponse.redirect(new URL('/painel/login', request.url));
     }
 
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: ['/admin/:path*'],
+    // Atualizado para observar /painel
+    matcher: ['/painel/:path*', '/admin/:path*'],
 };

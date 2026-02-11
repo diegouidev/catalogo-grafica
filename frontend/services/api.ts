@@ -91,3 +91,17 @@ export const getCompanyConfig = async () => {
         return data[0];
     } catch { return null; }
 };
+
+export const registerView = async (productId: number) => {
+    try {
+        await fetch(`${API_URL_ENV}/products/${productId}/increment_view/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            keepalive: true // Garante que o request termine mesmo se mudar de página
+        });
+    } catch (error) {
+        console.error("Erro ao registrar view", error);
+    }
+};

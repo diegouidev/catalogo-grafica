@@ -33,7 +33,7 @@ export default function LoginPage() {
                 });
 
                 localStorage.setItem("token", data.access);
-                router.push("/admin/dashboard");
+                router.push("/painel/dashboard");
             } else {
                 setError("Usuário ou senha inválidos.");
             }
