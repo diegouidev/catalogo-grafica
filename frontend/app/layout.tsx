@@ -1,9 +1,10 @@
-import type { Metadata, Suspense } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import Analytics from "@/components/Analytics";
 import { CartProvider } from "@/context/CartContext"; // Importando o novo Provider
 import { Toaster } from 'react-hot-toast';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: "Cloud Design - Catálogo Online",
