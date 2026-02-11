@@ -38,7 +38,7 @@ export default function Footer({ config }: FooterProps) {
                         <h3 className="text-white font-bold text-sm uppercase tracking-widest text-brand-blue">Contatos</h3>
                         <div className="space-y-3">
                             <a 
-                                href={`https://wa.me/55${phoneLink}`} 
+                                href={`https://wa.me/${phoneLink}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group"
