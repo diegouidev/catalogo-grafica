@@ -53,6 +53,7 @@ class Banner(models.Model):
     link = models.URLField(max_length=500, blank=True, verbose_name="Link de Destino")
     is_active = models.BooleanField(default=True, verbose_name="Ativo?")
     order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True) # <--- O CAMPO QUE FALTAVA
 
     class Meta:
         verbose_name = "Banner"
