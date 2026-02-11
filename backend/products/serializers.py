@@ -108,7 +108,7 @@ class BannerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Banner
-        fields = ['id', 'title', 'subtitle', 'image', 'order']
+        fields = ['id', 'title', 'subtitle', 'image', 'image_mobile', 'link', 'is_active', 'order']
 
     def get_image(self, obj):
         if obj.image:
