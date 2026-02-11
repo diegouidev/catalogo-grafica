@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import Analytics from "@/components/Analytics";
 import { CartProvider } from "@/context/CartContext"; // Importando o novo Provider
 import { Toaster } from 'react-hot-toast';
 
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <CartProvider>
+            <Analytics />
             {children}
             <Toaster position="bottom-center" /> {/* Adicione aqui */}
           </CartProvider>

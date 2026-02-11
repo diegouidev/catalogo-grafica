@@ -32,9 +32,22 @@ export const getBanners = async () => {
     return res.json();
 };
 
-export const getProducts = async (params?: string) => {
-    const query = params ? `?${params}` : '';
-    const res = await fetch(`${API_URL_ENV}/products/${query}`, { next: { revalidate: 60 } });
+export const getProducts = async (categorySlug?: string, searchTerm?: string) => {
+    // Monta a Query String dinamicamente
+    const params = new URLSearchParams();
+    
+    if (categorySlug && categorySlug !== 'todos') {
+        params.append('category__slug', categorySlug);
+    }
+    
+    if (searchTerm) {
+        params.append('search', searchTerm);
+    }
+
+    const queryString = params.toString();
+    const url = `${API_URL}/products/?${queryString}`;
+
+    const res = await fetch(url, { next: { revalidate: 0 } }); // 0 para busca em tempo real
     if (!res.ok) throw new Error('Falha ao carregar produtos');
     return res.json();
 };
