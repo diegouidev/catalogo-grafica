@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Trophy, Package, ArrowLeft } from "lucide-react";
+import { getImageUrl } from "@/services/api";
 
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
@@ -71,16 +72,21 @@ export default function DashboardPage() {
 
                     <div className="space-y-4">
                         {stats.ranking.map((prod: any, index: number) => {
-                            const imageUrl = prod.image?.startsWith('http')
-                                ? prod.image
-                                : `${BASE_URL}${prod.image}`;
-
+                            const imageUrl = getImageUrl(prod.image);
                             return (
                                 <div key={prod.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-transparent hover:border-brand-blue/30 transition-all group">
                                     <div className="flex items-center gap-4">
                                         <span className="font-black text-brand-blue w-6 text-lg">#{index + 1}</span>
                                         <div className="w-14 h-14 rounded-xl overflow-hidden relative border dark:border-white/10">
-                                            <img src={imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt={prod.name} />
+                                            <img 
+                                                src={imageUrl} 
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform" 
+                                                alt={prod.name}
+                                                onError={(e) => {
+                                                    e.currentTarget.onerror = null;
+                                                    e.currentTarget.src = "/logo-oficial.png";
+                                                }}
+                                            />
                                         </div>
                                         <p className="font-bold dark:text-white">{prod.name}</p>
                                     </div>

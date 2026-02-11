@@ -6,10 +6,20 @@ const nextConfig: NextConfig = {
       {
         protocol: 'http',
         hostname: '127.0.0.1',
-        port: '8000',
-        pathname: '/media/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloudgraficarapida.com.br', // <--- ADICIONADO SEU DOMÍNIO
       },
     ],
+  },
+  // Isso ajuda a evitar problemas de cache em imagens atualizadas recentemente
+  httpAgentOptions: {
+    keepAlive: false,
   },
 };
 

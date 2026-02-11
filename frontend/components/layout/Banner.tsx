@@ -32,8 +32,8 @@ export default function Banner({ banners }: { banners: any[] }) {
                                 {banner.link ? (
                                     <Link href={banner.link} target="_blank" className="block w-full h-full cursor-pointer">
                                         <BannerPicture 
-                                            mobileSrc={mobileImgUrl} 
-                                            desktopSrc={desktopImgUrl} 
+                                            mobileSrc={mobileImgUrl} // Passando a URL tratada
+                                            desktopSrc={desktopImgUrl} // Passando a URL tratada
                                             alt={banner.title} 
                                         />
                                     </Link>

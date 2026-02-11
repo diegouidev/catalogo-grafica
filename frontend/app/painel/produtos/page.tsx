@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { PackagePlus, Upload, Trash2, PlusCircle, LayoutList, Pencil, Layers, Star } from "lucide-react";
 import { toast } from "react-hot-toast";
 import Cookies from 'js-cookie';
+import { getImageUrl } from "@/services/api";
 
 export default function ProductAdmin() {
     const [categories, setCategories] = useState([]);
@@ -242,7 +243,15 @@ export default function ProductAdmin() {
                     {products.map((p: any) => (
                         <div key={p.id} className="bg-white/5 border border-white/10 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-all">
                             <div className="flex items-center gap-4">
-                                <img src={p.image} alt={p.name} className="w-16 h-16 object-cover rounded-xl shadow-lg" />
+                                <img 
+                                    src={getImageUrl(p.image)} // <--- Correção aqui
+                                    alt={p.name} 
+                                    className="w-16 h-16 object-cover rounded-xl shadow-lg" 
+                                    onError={(e) => {
+                                        e.currentTarget.onerror = null;
+                                        e.currentTarget.src = "/logo-oficial.png";
+                                    }}
+                                />
                                 <div>
                                     <h3 className="text-white font-bold text-lg flex items-center gap-2">
                                         {p.name}
