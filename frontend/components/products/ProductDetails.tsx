@@ -2,17 +2,20 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { registerView, getImageUrl } from "@/services/api";
-import { ShoppingCart, Check, Clock, ShieldCheck, Truck } from "lucide-react";
+import { ShoppingCart, ShieldCheck, Clock, Truck } from "lucide-react";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
+// Removido o import de Image do next/image para evitar bloqueios de domínio
 
 export default function ProductDetails({ product }: { product: any }) {
     const { addToCart } = useCart();
     
-    // Seleciona a primeira variante por padrão
-    const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+    // Proteção: Se não tiver variantes, cria uma "fake" para não quebrar a tela
+    const defaultVariant = product.variants && product.variants.length > 0 
+        ? product.variants[0] 
+        : { id: 0, name: "Padrão", price: 0 };
+
+    const [selectedVariant, setSelectedVariant] = useState(defaultVariant);
     
-    // Analytics: Conta a visualização assim que o componente monta
     useEffect(() => {
         if (product?.id) {
             registerView(product.id);
@@ -27,55 +30,56 @@ export default function ProductDetails({ product }: { product: any }) {
         });
     };
 
-    if (!product) return <div>Produto não carregado</div>;
+    if (!product) return <div className="text-white text-center p-10">Carregando detalhes...</div>;
 
     const currentPrice = Number(selectedVariant?.price || 0);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             
-            {/* COLUNA 1: IMAGEM GIGANTE */}
+            {/* COLUNA 1: IMAGEM GIGANTE (Corrigida com <img>) */}
             <div className="relative rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 aspect-square lg:aspect-auto lg:h-[600px] group">
-                <Image
+                <img
                     src={getImageUrl(product.image)}
                     alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                    priority // Carrega rápido para SEO
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "/logo-oficial.png";
+                    }}
                 />
             </div>
 
             {/* COLUNA 2: DETALHES E COMPRA */}
             <div className="flex flex-col justify-center space-y-8">
                 
-                {/* Cabeçalho */}
                 <div>
                     <span className="text-brand-blue font-bold text-xs uppercase tracking-[0.2em] mb-2 block">
                         {product.category_name}
                     </span>
-                    <h1 className="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
+                    <h1 className="text-3xl md:text-5xl font-black text-white leading-tight mb-4">
                         {product.name}
                     </h1>
-                    {/* Badges de Acabamento */}
                     <div className="flex flex-wrap gap-2">
                         {product.finishings?.map((f:any) => (
-                            <span key={f.id} className="text-[10px] font-bold text-gray-300 bg-white/10 px-3 py-1 rounded-full">
+                            <span key={f.id} className="text-[10px] font-bold text-gray-300 bg-white/10 px-3 py-1 rounded-full border border-white/5">
                                 {f.name}
                             </span>
                         ))}
                     </div>
                 </div>
 
-                {/* Descrição */}
                 <div className="prose prose-invert text-gray-400 text-sm leading-relaxed border-l-2 border-brand-blue/30 pl-4">
-                    <p>{product.description || "Sem descrição detalhada."}</p>
+                    <p>{product.description || "Descrição em breve."}</p>
                 </div>
 
-                {/* Seletor de Variação (Interativo) */}
+                {/* Seletor de Variação */}
                 <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-4">
-                    <label className="text-gray-400 text-xs font-bold uppercase tracking-wider">Escolha a quantidade / Tamanho:</label>
+                    <label className="text-gray-400 text-xs font-bold uppercase tracking-wider">
+                        Escolha a opção:
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
-                        {product.variants.map((variant: any) => (
+                        {product.variants?.map((variant: any) => (
                             <button
                                 key={variant.id}
                                 onClick={() => setSelectedVariant(variant)}
@@ -94,7 +98,7 @@ export default function ProductDetails({ product }: { product: any }) {
                     </div>
                 </div>
 
-                {/* Preço e Botão */}
+                {/* Botão de Compra */}
                 <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
                     <div className="flex items-end gap-2">
                         <span className="text-gray-400 text-sm mb-1">Total:</span>
@@ -105,16 +109,15 @@ export default function ProductDetails({ product }: { product: any }) {
 
                     <button
                         onClick={handleAddToCart}
-                        className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-brand-blue/20 hover:shadow-brand-blue/40"
+                        className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-brand-blue/20"
                     >
-                        <ShoppingCart size={24} /> Adicionar ao Pedido
+                        <ShoppingCart size={24} /> ADICIONAR AO PEDIDO
                     </button>
                     
-                    {/* Garantias */}
-                    <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wide pt-2">
+                    <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wide pt-2 px-1">
                         <span className="flex items-center gap-1"><ShieldCheck size={14} className="text-green-500"/> Compra Segura</span>
-                        <span className="flex items-center gap-1"><Clock size={14} className="text-brand-blue"/> Produção: {product.production_time}</span>
-                        <span className="flex items-center gap-1"><Truck size={14} className="text-yellow-500"/> Entrega em todo CE</span>
+                        <span className="flex items-center gap-1"><Clock size={14} className="text-brand-blue"/> {product.production_time || "Consulte prazo"}</span>
+                        <span className="flex items-center gap-1"><Truck size={14} className="text-yellow-500"/> Entrega CE</span>
                     </div>
                 </div>
 

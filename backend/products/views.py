@@ -44,9 +44,15 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True)
+        
+        # Filtros existentes
         category_slug = self.request.query_params.get('category')
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
+    
+        slug = self.request.query_params.get('slug')
+        if slug:
+            queryset = queryset.filter(slug=slug)
 
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
