@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -23,9 +24,23 @@ class Product(models.Model):
     production_time = models.CharField(max_length=50, help_text="Ex: 2 dias úteis, 5 horas") # Novo campo
     is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0)
+    slug = models.SlugField(unique=True, blank=True, max_length=250, help_text="URL amigável para SEO")
     is_featured = models.BooleanField(default=False, verbose_name="Destaque")
     finishings = models.ManyToManyField(Finishing, blank=True, verbose_name="Acabamentos")
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Cria o slug baseado no nome (Ex: "Cartão de Visita" -> "cartao-de-visita")
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            # Garante que seja único se já existir outro igual
+            while Product.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
