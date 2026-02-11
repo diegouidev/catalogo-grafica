@@ -105,3 +105,26 @@ export const registerView = async (productId: number) => {
         console.error("Erro ao registrar view", error);
     }
 };
+
+export const getProductBySlug = async (slug: string) => {
+    try {
+        // Filtra usando o campo slug que criamos (o Django Filter já suporta isso se configurado,
+        // ou usamos a busca padrão se o filterset_fields incluir 'slug')
+        const res = await fetch(`${API_URL_ENV}/products/?slug=${slug}`, { 
+            next: { revalidate: 60 } // Cache de 1 minuto
+        });
+        
+        if (!res.ok) return null;
+        
+        const data = await res.json();
+        
+        // O Django retorna uma lista, pegamos o primeiro item
+        if (data.results && data.results.length > 0) return data.results[0];
+        if (Array.isArray(data) && data.length > 0) return data[0];
+        
+        return null;
+    } catch (error) {
+        console.error("Erro ao buscar produto por slug:", error);
+        return null;
+    }
+};

@@ -4,6 +4,8 @@ import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Clock, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getImageUrl, registerView } from "@/services/api"; // <--- Importe a função nova
+import Link from "next/link";
+
 
 export default function ProductCard({ product }: { product: any }) {
     const { addToCart } = useCart();
@@ -60,7 +62,12 @@ export default function ProductCard({ product }: { product: any }) {
                     </div>
 
                     <h3 className="text-white font-black text-lg leading-tight mb-3">
-                        {product.name}
+                        <Link 
+                            href={`/produto/${product.slug}`} 
+                            className="hover:text-brand-blue transition-colors cursor-pointer"
+                        >
+                            {product.name}
+                        </Link>
                     </h3>
 
                     {product.finishings && product.finishings.length > 0 && (
