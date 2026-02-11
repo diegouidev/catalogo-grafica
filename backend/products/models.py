@@ -44,7 +44,7 @@ class Banner(models.Model):
     subtitle = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='banners/')
     image_mobile = models.ImageField(
-        upload_to='banners/mobile/', 
+        upload_to='banners/', 
         verbose_name="Imagem Mobile (Vertical)", 
         blank=True, 
         null=True,

@@ -1,4 +1,4 @@
-// frontend/app/admin/layout.tsx
+// frontend/app/painel/layout.tsx
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation"; // Importe usePathname
@@ -14,13 +14,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const token = Cookies.get('auth_token');
 
         // Se for a página de login, não precisa validar token aqui
-        if (pathname === "/admin/login") {
+        if (pathname === "/painel/login") {
             setAuthorized(true);
             return;
         }
 
         if (!token) {
-            router.push("/admin/login");
+            router.push("/painel/login");
         } else {
             setAuthorized(true);
         }
@@ -35,7 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     // Se estiver no login, renderiza apenas o formulário (sem a Sidebar)
-    if (pathname === "/admin/login") {
+    if (pathname === "/painel/login") {
         return <>{children}</>;
     }
 
