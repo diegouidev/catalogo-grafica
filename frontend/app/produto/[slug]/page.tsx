@@ -1,100 +1,71 @@
 import { Metadata } from 'next';
-import { getProductBySlug, getImageUrl } from "@/services/api";
+import { getProductBySlug, getImageUrl, getCompanyConfig } from "@/services/api";
 import ProductDetails from "@/components/products/ProductDetails";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FloatingCart from "@/components/cart/FloatingCart";
-import { getCompanyConfig } from "@/services/api";
 
-// 1. GERAÇÃO DE METADADOS (SEO) - O Google lê isso antes de carregar a página
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+// Definição do Tipo para Next.js 15+ (Params é uma Promise agora)
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+// 1. GERA O SEO (Título e Descrição)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // AWAIT OBRIGATÓRIO AQUI:
+  const resolvedParams = await params;
+  const product = await getProductBySlug(resolvedParams.slug);
   
   if (!product) {
-    return {
-      title: 'Produto não encontrado | Cloud Design',
-      description: 'Confira nossos produtos de gráfica rápida.'
-    };
+    return { title: 'Produto não encontrado | Cloud Design' };
   }
-
-  const imageUrl = getImageUrl(product.image);
 
   return {
     title: `${product.name} | Cloud Gráfica Rápida`,
-    description: product.description ? product.description.substring(0, 160) : `Compre ${product.name} com a melhor qualidade e prazo.`,
+    description: product.description?.substring(0, 160),
     openGraph: {
-      title: product.name,
-      description: product.description || `Oferta especial: ${product.name}`,
-      images: [imageUrl],
-      url: `https://cloudgraficarapida.com.br/produto/${product.slug}`,
-      type: 'website',
+      images: [getImageUrl(product.image)],
     },
-    twitter: {
-      card: 'summary_large_image',
-      title: product.name,
-      description: product.description || `Oferta especial: ${product.name}`,
-      images: [imageUrl],
-    }
   };
 }
 
 // 2. PÁGINA PRINCIPAL
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  // Busca os dados em paralelo para ser rápido
+export default async function ProductPage({ params }: Props) {
+  // AWAIT OBRIGATÓRIO AQUI TAMBÉM:
+  const resolvedParams = await params;
+  const slug = resolvedParams.slug;
+
+  console.log("Slug resolvido na página:", slug); // Debug para ver no terminal
+
+  // Busca dados em paralelo
   const [product, companyConfig] = await Promise.all([
-    getProductBySlug(params.slug),
+    getProductBySlug(slug),
     getCompanyConfig()
   ]);
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#05060a] flex flex-col items-center justify-center text-white">
+      <div className="min-h-screen bg-[#05060a] flex flex-col items-center justify-center text-white p-4 text-center">
         <h1 className="text-3xl font-black mb-4">Produto não encontrado 😕</h1>
-        <a href="/" className="bg-brand-blue px-6 py-3 rounded-full font-bold">Voltar ao Catálogo</a>
+        <p className="text-gray-400 mb-6">O slug buscado foi: {slug}</p>
+        <a href="/" className="bg-brand-blue px-6 py-3 rounded-full font-bold hover:bg-white hover:text-brand-blue transition-colors">
+            Voltar ao Catálogo
+        </a>
       </div>
     );
   }
 
-  // Schema.org para o Google mostrar preço no resultado da busca (Rich Snippets)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    image: getImageUrl(product.image),
-    description: product.description,
-    sku: product.id,
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'BRL',
-      price: product.variants[0]?.price,
-      availability: 'https://schema.org/InStock',
-      url: `https://cloudgraficarapida.com.br/produto/${product.slug}`,
-      seller: {
-        '@type': 'Organization',
-        name: 'Cloud Design Gráfica'
-      }
-    }
-  };
-
   return (
     <main className="min-h-screen flex flex-col bg-[#05060a]">
-        {/* Injeta dados estruturados */}
-        <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-
         <Header />
         
         <section className="max-w-7xl mx-auto px-4 py-10 md:py-16 flex-grow w-full">
-            {/* Breadcrumb simples */}
             <nav className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">
-                <a href="/" className="hover:text-brand-blue transition-colors">Início</a>
-                <span className="mx-2">/</span>
+                <a href="/" className="hover:text-brand-blue transition-colors">Início</a> 
+                <span className="mx-2">/</span> 
                 <span className="text-white">{product.name}</span>
             </nav>
 
-            {/* Componente Client com a interatividade */}
             <ProductDetails product={product} />
         </section>
 
