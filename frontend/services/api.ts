@@ -1,8 +1,15 @@
 const API_URL_ENV = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
+const isServer = typeof window === 'undefined';
+const API_URL = isServer 
+    ? "http://backend:8000/api"  // URL interna do Docker (super rápida e garantida)
+    : process.env.NEXT_PUBLIC_API_URL;
+
 // Remove o /api do final para pegar a raiz do site
 // Ex: https://seu-site.com.br/api -> https://seu-site.com.br
 export const API_BASE_URL = API_URL_ENV.replace('/api', '');
+
+
 
 // --- NOVA FUNÇÃO ROBUSTA DE IMAGEM ---
 export const getImageUrl = (path: string | null | undefined) => {
@@ -108,23 +115,30 @@ export const registerView = async (productId: number) => {
 
 export const getProductBySlug = async (slug: string) => {
     try {
-        // Filtra usando o campo slug que criamos (o Django Filter já suporta isso se configurado,
-        // ou usamos a busca padrão se o filterset_fields incluir 'slug')
-        const res = await fetch(`${API_URL_ENV}/products/?slug=${slug}`, { 
-            next: { revalidate: 60 } // Cache de 1 minuto
+        console.log(`[API] Buscando slug: ${slug} em ${API_URL}`); // Log para debug
+
+        const res = await fetch(`${API_URL}/products/?slug=${slug}`, { 
+            next: { revalidate: 0 }, // Sem cache para testar agora
+            cache: 'no-store'
         });
         
-        if (!res.ok) return null;
+        if (!res.ok) {
+            console.error(`[API] Erro HTTP: ${res.status}`);
+            return null;
+        }
         
         const data = await res.json();
         
-        // O Django retorna uma lista, pegamos o primeiro item
+        // Verifica o que chegou no terminal
+        console.log(`[API] Resposta para ${slug}:`, JSON.stringify(data).substring(0, 100) + "...");
+
+        // Lógica para pegar o primeiro item da lista
         if (data.results && data.results.length > 0) return data.results[0];
         if (Array.isArray(data) && data.length > 0) return data[0];
         
         return null;
     } catch (error) {
-        console.error("Erro ao buscar produto por slug:", error);
+        console.error("[API] Erro de conexão:", error);
         return null;
     }
 };
