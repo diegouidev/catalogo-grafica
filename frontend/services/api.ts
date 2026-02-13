@@ -1,7 +1,7 @@
 const API_URL_ENV = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 const isServer = typeof window === 'undefined';
-const API_URL = isServer 
+const API_URL = isServer
     ? "http://backend:8000/api"  // URL interna do Docker (super rápida e garantida)
     : process.env.NEXT_PUBLIC_API_URL;
 
@@ -41,11 +41,11 @@ export const getBanners = async () => {
 
 export const getProducts = async (categorySlug?: string, searchTerm?: string) => {
     const params = new URLSearchParams();
-    
+
     if (categorySlug && categorySlug !== 'todos') {
         params.append('category__slug', categorySlug);
     }
-    
+
     if (searchTerm) {
         params.append('search', searchTerm);
     }
@@ -55,17 +55,17 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string) =>
     const url = `${API_URL_ENV}/products/?${queryString}`;
 
     try {
-        const res = await fetch(url, { 
+        const res = await fetch(url, {
             next: { revalidate: 0 },
             headers: {
                 'Content-Type': 'application/json',
                 // Às vezes ajuda a evitar cache agressivo
-                'Cache-Control': 'no-cache'
+                //'Cache-Control': 'no-cache'
             }
-        }); 
+        });
 
         if (!res.ok) throw new Error('Falha ao carregar produtos');
-        
+
         const data = await res.json();
 
         // --- CORREÇÃO DE OURO ---
@@ -117,25 +117,25 @@ export const getProductBySlug = async (slug: string) => {
     try {
         console.log(`[API] Buscando slug: ${slug} em ${API_URL}`); // Log para debug
 
-        const res = await fetch(`${API_URL}/products/?slug=${slug}`, { 
+        const res = await fetch(`${API_URL}/products/?slug=${slug}`, {
             next: { revalidate: 0 }, // Sem cache para testar agora
             cache: 'no-store'
         });
-        
+
         if (!res.ok) {
             console.error(`[API] Erro HTTP: ${res.status}`);
             return null;
         }
-        
+
         const data = await res.json();
-        
+
         // Verifica o que chegou no terminal
         console.log(`[API] Resposta para ${slug}:`, JSON.stringify(data).substring(0, 100) + "...");
 
         // Lógica para pegar o primeiro item da lista
         if (data.results && data.results.length > 0) return data.results[0];
         if (Array.isArray(data) && data.length > 0) return data[0];
-        
+
         return null;
     } catch (error) {
         console.error("[API] Erro de conexão:", error);

@@ -13,12 +13,31 @@ class FinishingSerializer(serializers.ModelSerializer):
         model = Finishing
         fields = ['id', 'name']
 
+# --- NOVO: SERIALIZER DO COMPRE JUNTO ---
+class UpsellProductSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    starting_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'slug', 'image', 'starting_price']
+
+    def get_image(self, obj):
+        if obj.image:
+            return f"{settings.MEDIA_URL}{obj.image}"
+        return None
+
+    def get_starting_price(self, obj):
+        first_variant = obj.variants.first()
+        return first_variant.price if first_variant else 0
+# -----------------------------------------
+
 class ProductSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True, read_only=True)
     finishings = FinishingSerializer(many=True, read_only=True)
+    upsell_products = UpsellProductSerializer(many=True, read_only=True) # <--- NOVO
     category_name = serializers.ReadOnlyField(source='category.name')
     category_slug = serializers.ReadOnlyField(source='category.slug')
-    # Forçamos a imagem a ser um SerializerMethodField para controlar a URL
     image = serializers.SerializerMethodField()
     
     class Meta:
@@ -27,11 +46,10 @@ class ProductSerializer(serializers.ModelSerializer):
             'id', 'name', 'slug', 'description', 'image',
             'production_time', 'category', 'category_name', 
             'variants', 'finishings', 'is_featured',
-            'views_count', 'category_slug'
+            'views_count', 'category_slug', 'upsell_products'
         ]
 
     def get_image(self, obj):
-        # Retorna o caminho absoluto da URL (ex: /media/products/img.jpg)
         if obj.image:
             return f"{settings.MEDIA_URL}{obj.image}"
         return None
@@ -40,6 +58,7 @@ class ProductSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         variants_data = request.data.get('variants_json')
         finishings_data = request.data.get('finishings_json')
+        upsells_data = request.data.get('upsells_json') # <--- NOVO
         
         product = Product.objects.create(**validated_data)
         
@@ -56,8 +75,13 @@ class ProductSerializer(serializers.ModelSerializer):
             try:
                 finishings_ids = json.loads(finishings_data)
                 product.finishings.set(finishings_ids)
-            except Exception as e:
-                print(f"Erro acabamentos: {e}")
+            except: pass
+
+        if upsells_data: # <--- NOVO
+            try:
+                upsell_ids = json.loads(upsells_data)
+                product.upsell_products.set(upsell_ids)
+            except: pass
                 
         return product
 
@@ -65,6 +89,7 @@ class ProductSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         variants_data = request.data.get('variants_json')
         finishings_data = request.data.get('finishings_json')
+        upsells_data = request.data.get('upsells_json') # <--- NOVO
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
@@ -84,6 +109,12 @@ class ProductSerializer(serializers.ModelSerializer):
             try:
                 finishings_ids = json.loads(finishings_data)
                 instance.finishings.set(finishings_ids)
+            except: pass
+
+        if upsells_data: # <--- NOVO
+            try:
+                upsell_ids = json.loads(upsells_data)
+                instance.upsell_products.set(upsell_ids)
             except: pass
 
         return instance
@@ -119,7 +150,6 @@ class CompanyConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyConfig
         fields = ['name', 'whatsapp', 'instagram', 'address', 'map_iframe', 'facebook_pixel_id', 'google_analytics_id']
-
 
 class CouponSerializer(serializers.ModelSerializer):
     class Meta:

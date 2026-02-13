@@ -2,20 +2,19 @@
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { registerView, getImageUrl } from "@/services/api";
-import { ShoppingCart, ShieldCheck, Clock, Truck } from "lucide-react";
+import { ShoppingCart, ShieldCheck, Clock, Truck, PackagePlus } from "lucide-react";
+import Link from "next/link";
 import { toast } from "react-hot-toast";
-// Removido o import de Image do next/image para evitar bloqueios de domínio
 
 export default function ProductDetails({ product }: { product: any }) {
     const { addToCart } = useCart();
-    
-    // Proteção: Se não tiver variantes, cria uma "fake" para não quebrar a tela
-    const defaultVariant = product.variants && product.variants.length > 0 
-        ? product.variants[0] 
+
+    const defaultVariant = product.variants && product.variants.length > 0
+        ? product.variants[0]
         : { id: 0, name: "Padrão", price: 0 };
 
     const [selectedVariant, setSelectedVariant] = useState(defaultVariant);
-    
+
     useEffect(() => {
         if (product?.id) {
             registerView(product.id);
@@ -36,8 +35,8 @@ export default function ProductDetails({ product }: { product: any }) {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            
-            {/* COLUNA 1: IMAGEM GIGANTE (Corrigida com <img>) */}
+
+            {/* COLUNA 1: IMAGEM GIGANTE */}
             <div className="relative rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 aspect-square lg:aspect-auto lg:h-[600px] group">
                 <img
                     src={getImageUrl(product.image)}
@@ -52,7 +51,6 @@ export default function ProductDetails({ product }: { product: any }) {
 
             {/* COLUNA 2: DETALHES E COMPRA */}
             <div className="flex flex-col justify-center space-y-8">
-                
                 <div>
                     <span className="text-brand-blue font-bold text-xs uppercase tracking-[0.2em] mb-2 block">
                         {product.category_name}
@@ -61,7 +59,7 @@ export default function ProductDetails({ product }: { product: any }) {
                         {product.name}
                     </h1>
                     <div className="flex flex-wrap gap-2">
-                        {product.finishings?.map((f:any) => (
+                        {product.finishings?.map((f: any) => (
                             <span key={f.id} className="text-[10px] font-bold text-gray-300 bg-white/10 px-3 py-1 rounded-full border border-white/5">
                                 {f.name}
                             </span>
@@ -73,7 +71,6 @@ export default function ProductDetails({ product }: { product: any }) {
                     <p>{product.description || "Descrição em breve."}</p>
                 </div>
 
-                {/* Seletor de Variação */}
                 <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-4">
                     <label className="text-gray-400 text-xs font-bold uppercase tracking-wider">
                         Escolha a opção:
@@ -83,11 +80,10 @@ export default function ProductDetails({ product }: { product: any }) {
                             <button
                                 key={variant.id}
                                 onClick={() => setSelectedVariant(variant)}
-                                className={`p-4 rounded-xl text-left transition-all border ${
-                                    selectedVariant.id === variant.id 
-                                    ? "bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20" 
+                                className={`p-4 rounded-xl text-left transition-all border ${selectedVariant.id === variant.id
+                                    ? "bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/20"
                                     : "bg-black/20 text-gray-400 border-white/5 hover:border-white/20"
-                                }`}
+                                    }`}
                             >
                                 <span className="block font-bold text-sm">{variant.name}</span>
                                 <span className={`text-xs ${selectedVariant.id === variant.id ? "text-white/90" : "text-gray-500"}`}>
@@ -98,7 +94,6 @@ export default function ProductDetails({ product }: { product: any }) {
                     </div>
                 </div>
 
-                {/* Botão de Compra */}
                 <div className="flex flex-col gap-4 pt-4 border-t border-white/10">
                     <div className="flex items-end gap-2">
                         <span className="text-gray-400 text-sm mb-1">Total:</span>
@@ -113,15 +108,50 @@ export default function ProductDetails({ product }: { product: any }) {
                     >
                         <ShoppingCart size={24} /> ADICIONAR AO PEDIDO
                     </button>
-                    
+
                     <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase tracking-wide pt-2 px-1">
-                        <span className="flex items-center gap-1"><ShieldCheck size={14} className="text-green-500"/> Compra Segura</span>
-                        <span className="flex items-center gap-1"><Clock size={14} className="text-brand-blue"/> {product.production_time || "Consulte prazo"}</span>
-                        <span className="flex items-center gap-1"><Truck size={14} className="text-yellow-500"/> Entrega CE</span>
+                        <span className="flex items-center gap-1"><ShieldCheck size={14} className="text-green-500" /> Compra Segura</span>
+                        <span className="flex items-center gap-1"><Clock size={14} className="text-brand-blue" /> {product.production_time || "Consulte prazo"}</span>
+                        <span className="flex items-center gap-1"><Truck size={14} className="text-yellow-500" /> Entrega CE</span>
                     </div>
                 </div>
-
             </div>
+
+            {/* INÍCIO DO COMPRE JUNTO (UPSELL) */}
+            {product.upsell_products && product.upsell_products.length > 0 && (
+                <div className="col-span-full mt-12 pt-10 border-t border-white/10 animate-in fade-in slide-in-from-bottom-8">
+                    <h3 className="text-2xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-3">
+                        <PackagePlus className="text-brand-blue" size={28} /> Aproveite e leve também
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {product.upsell_products.map((upsell: any) => (
+                            <Link
+                                key={upsell.id}
+                                href={`/produto/${upsell.slug}`}
+                                className="flex items-center gap-4 bg-[#0f111a] p-4 rounded-3xl border border-white/5 hover:border-brand-blue/30 transition-all group shadow-lg"
+                            >
+                                <img
+                                    src={getImageUrl(upsell.image)}
+                                    alt={upsell.name}
+                                    className="w-20 h-20 rounded-2xl object-cover group-hover:scale-105 transition-transform"
+                                    onError={(e) => {
+                                        e.currentTarget.onerror = null;
+                                        e.currentTarget.src = "/logo-oficial.png";
+                                    }}
+                                />
+                                <div>
+                                    <h4 className="text-white font-bold group-hover:text-brand-blue transition-colors leading-tight mb-1">{upsell.name}</h4>
+                                    <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">
+                                        a partir de <span className="text-brand-blue">R$ {Number(upsell.starting_price).toFixed(2)}</span>
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {/* FIM DO COMPRE JUNTO */}
+
         </div>
     );
 }

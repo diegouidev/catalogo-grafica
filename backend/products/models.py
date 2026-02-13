@@ -27,6 +27,13 @@ class Product(models.Model):
     slug = models.SlugField(unique=True, blank=True, max_length=250, help_text="URL amigável para SEO")
     is_featured = models.BooleanField(default=False, verbose_name="Destaque")
     finishings = models.ManyToManyField(Finishing, blank=True, verbose_name="Acabamentos")
+
+    upsell_products = models.ManyToManyField(
+        'self', 
+        blank=True, 
+        symmetrical=False, 
+        help_text="Selecione produtos para a seção 'Compre Junto'"
+    )
     
     def save(self, *args, **kwargs):
         if not self.slug:
