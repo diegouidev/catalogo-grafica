@@ -62,8 +62,8 @@ export default function ProductCard({ product }: { product: any }) {
                     </div>
 
                     <h3 className="text-white font-black text-lg leading-tight mb-3">
-                        <Link 
-                            href={`/produto/${product.slug}`} 
+                        <Link
+                            href={`/produto/${product.slug}`}
                             className="hover:text-brand-blue transition-colors cursor-pointer"
                         >
                             {product.name}
@@ -96,7 +96,7 @@ export default function ProductCard({ product }: { product: any }) {
                                 }}
                             >
                                 {product.variants?.map((v: any) => (
-                                    <option key={v.id} value={v.id} className="dark:bg-brand-navy text-black">
+                                    <option key={v.id} value={v.id} className="dark:bg-brand-navy text-white">
                                         {v.name} Uni - R$ {Number(v.price).toFixed(2)}
                                     </option>
                                 ))}

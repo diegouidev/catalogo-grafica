@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
-import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket } from "lucide-react";
+import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket, Truck } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getImageUrl } from "@/services/api"; // <--- 1. Importação Adicionada
+import { getImageUrl } from "@/services/api";
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const { cart, removeFromCart, coupon, applyCoupon, removeCoupon } = useCart();
@@ -11,6 +11,10 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
     const [couponInput, setCouponInput] = useState("");
     const [customerData, setCustomerData] = useState({ name: "", phone: "" });
     const [whatsappNumber, setWhatsappNumber] = useState("");
+
+    // --- CONFIGURAÇÃO DA BARRA DE PROGRESSO ---
+    const GOAL_AMOUNT = 300.00; // Valor para ganhar o bônus (Frete Grátis)
+    // ------------------------------------------
 
     useEffect(() => {
         if (isOpen) {
@@ -42,6 +46,12 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
     const discountValue = coupon ? (subtotal * coupon.discount) / 100 : 0;
     const total = subtotal - discountValue;
 
+    // --- LÓGICA DA BARRA DE PROGRESSO ---
+    const progressPercentage = Math.min((total / GOAL_AMOUNT) * 100, 100);
+    const amountMissing = Math.max(GOAL_AMOUNT - total, 0);
+    const goalReached = total >= GOAL_AMOUNT;
+    // ------------------------------------
+
     const handleApplyCoupon = async () => {
         const res = await applyCoupon(couponInput);
         if (res.success) toast.success(`Cupom de ${res.discount}% aplicado! 🎫`);
@@ -54,7 +64,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         }
 
         if (!whatsappNumber) {
-            // Fallback caso a API falhe
             return toast.error("Número da gráfica não encontrado. 📞");
         }
 
@@ -80,8 +89,13 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
             message += `🎁 *DESCONTO:* - R$ ${discountValue.toFixed(2)}\n`;
         }
 
-        message += `\n✅ *TOTAL FINAL: R$ ${total.toFixed(2)}*`;
-        message += `\n\n_Aguardando confirmação para iniciar a produção!_ 🎨`;
+        message += `\n✅ *TOTAL FINAL: R$ ${total.toFixed(2)}*\n`;
+
+        if (goalReached) {
+            message += `🚚 *BÔNUS ALCANÇADO:* Frete Grátis!\n`;
+        }
+
+        message += `\n_Aguardando confirmação para iniciar a produção!_ 🎨`;
 
         const cleanMessage = message.trim();
         const encodedMessage = encodeURIComponent(cleanMessage);
@@ -102,13 +116,39 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                     {step === 'cart' ? (
                         <div className="space-y-4">
+
+                            {/* --- BARRA DE PROGRESSO VISUAL --- */}
+                            {cart.length > 0 && (
+                                <div className="mb-6 bg-white/5 border border-white/10 p-4 rounded-2xl animate-in fade-in zoom-in">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Truck size={16} className={goalReached ? "text-green-500" : "text-brand-blue"} />
+                                            <span className="text-xs font-bold text-white uppercase tracking-wider">Frete Grátis</span>
+                                        </div>
+                                        <span className={`text-[10px] font-black uppercase ${goalReached ? "text-green-500" : "text-gray-400"}`}>
+                                            {goalReached ? "Alcançado 🎉" : `Faltam R$ ${amountMissing.toFixed(2)}`}
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-black/50 rounded-full h-3 overflow-hidden border border-white/5">
+                                        <div
+                                            className={`h-full rounded-full transition-all duration-1000 ease-out ${goalReached ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "bg-brand-blue"}`}
+                                            style={{ width: `${progressPercentage}%` }}
+                                        ></div>
+                                    </div>
+                                    {!goalReached && (
+                                        <p className="text-[10px] text-gray-500 mt-2 text-center italic">
+                                            Adicione mais produtos para não pagar entrega!
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                            {/* --------------------------------- */}
+
                             {cart.length === 0 ? (
                                 <p className="text-gray-500 text-center py-10 italic">Seu carrinho está vazio... 🛒</p>
                             ) : (
                                 cart.map((item: any, index: number) => (
                                     <div key={index} className="flex gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 group animate-in fade-in slide-in-from-right-4">
-
-                                        {/* --- 2. Lógica da Imagem Corrigida --- */}
                                         <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10 shrink-0">
                                             <img
                                                 src={getImageUrl(item.image)}
@@ -119,7 +159,6 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                                                 }}
                                             />
                                         </div>
-                                        {/* ----------------------------------- */}
 
                                         <div className="flex-1 min-w-0">
                                             <h4 className="text-white font-bold text-sm truncate mb-1">{item.name}</h4>

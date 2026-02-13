@@ -29,13 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// 2. PÁGINA PRINCIPAL
+
 export default async function ProductPage({ params }: Props) {
-  // AWAIT OBRIGATÓRIO AQUI TAMBÉM:
+
   const resolvedParams = await params;
   const slug = resolvedParams.slug;
-
-  console.log("Slug resolvido na página:", slug); // Debug para ver no terminal
 
   // Busca dados em paralelo
   const [product, companyConfig] = await Promise.all([
