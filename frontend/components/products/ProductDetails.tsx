@@ -1,13 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { registerView, getImageUrl, getCompanyConfig } from "@/services/api";
-import { ShoppingCart, ShieldCheck, Clock, Truck, MessageCircle, TrendingDown } from "lucide-react";
+import { ShoppingCart, ShieldCheck, Clock, Truck, MessageCircle, TrendingDown, PackagePlus } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 export default function ProductDetails({ product }: { product: any }) {
     const { addToCart } = useCart();
 
+    // --- ESTADOS ---
     const defaultVariant = product.variants && product.variants.length > 0
         ? product.variants[0]
         : { id: 0, name: "Padrão", price: 0 };
@@ -18,20 +20,13 @@ export default function ProductDetails({ product }: { product: any }) {
 
     const mainButtonRef = useRef<HTMLDivElement>(null);
 
+    // --- EFEITOS ---
     useEffect(() => {
         if (product?.id) registerView(product.id);
 
         getCompanyConfig().then(response => {
-            // Tenta pegar de 'results' (paginação), ou usa a resposta direta
             const data = response.results || response;
-            let configItem = null;
-
-            // Lógica Blindada: Aceita tanto Array quanto Objeto Único
-            if (Array.isArray(data)) {
-                configItem = data.length > 0 ? data[0] : null;
-            } else {
-                configItem = data;
-            }
+            const configItem = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data;
 
             if (configItem && configItem.whatsapp) {
                 setWhatsappNumber(configItem.whatsapp.replace(/\D/g, ""));
@@ -50,6 +45,7 @@ export default function ProductDetails({ product }: { product: any }) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // --- LÓGICA ATACADISTA ---
     const getQuantity = (name: string) => {
         const match = name.match(/(\d+)/);
         return match ? parseInt(match[0]) : 1;
@@ -66,6 +62,7 @@ export default function ProductDetails({ product }: { product: any }) {
         return currPrice < prevPrice ? current : prev;
     }, product.variants?.[0])?.id;
 
+    // --- AÇÕES ---
     const handleAddToCart = () => {
         addToCart(product, selectedVariant);
         toast.success("Produto adicionado ao carrinho!", {
@@ -85,7 +82,9 @@ export default function ProductDetails({ product }: { product: any }) {
 
     return (
         <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12">
+
+                {/* COLUNA 1: IMAGEM */}
                 <div className="relative rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 aspect-square lg:aspect-auto lg:h-[600px] group">
                     <img
                         src={getImageUrl(product.image)}
@@ -98,7 +97,9 @@ export default function ProductDetails({ product }: { product: any }) {
                     />
                 </div>
 
+                {/* COLUNA 2: DETALHES E COMPRA */}
                 <div className="flex flex-col justify-center space-y-8">
+
                     <div>
                         <span className="text-brand-blue font-bold text-xs uppercase tracking-[0.2em] mb-2 block">
                             {product.category_name}
@@ -119,6 +120,7 @@ export default function ProductDetails({ product }: { product: any }) {
                         <p>{product.description || "Descrição em breve."}</p>
                     </div>
 
+                    {/* TABELA PROGRESSIVA */}
                     <div className="bg-white/5 p-6 rounded-3xl border border-white/10 space-y-4">
                         <label className="text-gray-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                             <TrendingDown size={14} className="text-brand-blue" /> Selecione a Quantidade (Quanto mais, mais barato):
@@ -134,8 +136,8 @@ export default function ProductDetails({ product }: { product: any }) {
                                         key={variant.id}
                                         onClick={() => setSelectedVariant(variant)}
                                         className={`relative flex items-center justify-between p-4 rounded-xl text-left transition-all border-2 ${isSelected
-                                                ? "bg-brand-blue/10 border-brand-blue shadow-[0_0_20px_rgba(0,174,239,0.15)]"
-                                                : "bg-black/20 border-white/5 hover:border-white/20"
+                                            ? "bg-brand-blue/10 border-brand-blue shadow-[0_0_20px_rgba(0,174,239,0.15)]"
+                                            : "bg-black/20 border-white/5 hover:border-white/20"
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -167,6 +169,7 @@ export default function ProductDetails({ product }: { product: any }) {
                         </div>
                     </div>
 
+                    {/* Botão de Compra Principal */}
                     <div className="flex flex-col gap-4 pt-4 border-t border-white/10" ref={mainButtonRef}>
                         <div className="flex items-end gap-2">
                             <span className="text-gray-400 text-sm mb-1">Total:</span>
@@ -175,7 +178,10 @@ export default function ProductDetails({ product }: { product: any }) {
                             </span>
                         </div>
 
-                        <button onClick={handleAddToCart} className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-brand-blue/20">
+                        <button
+                            onClick={handleAddToCart}
+                            className="w-full bg-brand-blue hover:bg-brand-blue/90 text-white py-5 rounded-2xl font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-brand-blue/20"
+                        >
                             <ShoppingCart size={24} /> ADICIONAR AO PEDIDO
                         </button>
 
@@ -192,12 +198,51 @@ export default function ProductDetails({ product }: { product: any }) {
                 </div>
             </div>
 
+            {/* INÍCIO DO COMPRE JUNTO (UPSELL) */}
+            {product.upsell_products && product.upsell_products.length > 0 && (
+                <div className="col-span-full mt-12 pt-10 border-t border-white/10 animate-in fade-in slide-in-from-bottom-8">
+                    <h3 className="text-2xl font-black text-white mb-6 uppercase tracking-widest flex items-center gap-3">
+                        <PackagePlus className="text-brand-blue" size={28} /> Aproveite e leve também
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {product.upsell_products.map((upsell: any) => (
+                            <Link
+                                key={upsell.id}
+                                href={`/produto/${upsell.slug}`}
+                                className="flex items-center gap-4 bg-[#0f111a] p-4 rounded-3xl border border-white/5 hover:border-brand-blue/30 transition-all group shadow-lg"
+                            >
+                                <img
+                                    src={getImageUrl(upsell.image)}
+                                    alt={upsell.name}
+                                    className="w-20 h-20 rounded-2xl object-cover group-hover:scale-105 transition-transform"
+                                    onError={(e) => {
+                                        e.currentTarget.onerror = null;
+                                        e.currentTarget.src = "/logo-oficial.png";
+                                    }}
+                                />
+                                <div>
+                                    <h4 className="text-white font-bold group-hover:text-brand-blue transition-colors leading-tight mb-1">{upsell.name}</h4>
+                                    <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">
+                                        a partir de <span className="text-brand-blue">R$ {Number(upsell.starting_price).toFixed(2)}</span>
+                                    </p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {/* FIM DO COMPRE JUNTO */}
+
+            {/* BARRA FIXA MOBILE */}
             <div className={`fixed bottom-0 left-0 w-full bg-[#0a0b14]/90 backdrop-blur-lg border-t border-brand-blue/30 p-4 z-50 flex items-center justify-between lg:hidden transition-transform duration-500 ${showStickyBar ? 'translate-y-0' : 'translate-y-[120%]'}`}>
                 <div className="flex flex-col">
                     <span className="text-[10px] text-gray-400 font-bold uppercase">Total do Pedido</span>
                     <span className="text-xl font-black text-white">R$ {currentPrice.toFixed(2)}</span>
                 </div>
-                <button onClick={handleAddToCart} className="bg-brand-blue text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 shadow-lg shadow-brand-blue/20 active:scale-95">
+                <button
+                    onClick={handleAddToCart}
+                    className="bg-brand-blue text-white px-6 py-3 rounded-xl font-black text-sm uppercase flex items-center gap-2 shadow-lg shadow-brand-blue/20 active:scale-95"
+                >
                     <ShoppingCart size={18} /> Adicionar
                 </button>
             </div>
