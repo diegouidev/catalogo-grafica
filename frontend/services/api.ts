@@ -99,6 +99,26 @@ export const getCompanyConfig = async () => {
     } catch { return null; }
 };
 
+export const getKits = async () => {
+    try {
+        const res = await fetch(`${API_URL_ENV}/kits/?is_active=true`, { next: { revalidate: 0 }, cache: 'no-store' });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.results || data;
+    } catch { return []; }
+};
+
+export const getKitBySlug = async (slug: string) => {
+    try {
+        const res = await fetch(`${API_URL}/kits/?slug=${slug}`, { next: { revalidate: 0 }, cache: 'no-store' });
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (data.results && data.results.length > 0) return data.results[0];
+        if (Array.isArray(data) && data.length > 0) return data[0];
+        return null;
+    } catch { return null; }
+};
+
 export const registerView = async (productId: number) => {
     try {
         await fetch(`${API_URL_ENV}/products/${productId}/increment_view/`, {

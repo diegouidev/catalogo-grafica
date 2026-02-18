@@ -104,3 +104,32 @@ class Coupon(models.Model):
 
     def __str__(self):
         return f"{self.code} ({self.discount_percentage}%)"
+
+
+class Kit(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True, max_length=250, help_text="URL amigável")
+    description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='kits/', null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Preço promocional do combo")
+    
+    # É aqui que a mágica acontece: vinculamos os produtos ao Kit
+    products = models.ManyToManyField(Product, related_name='kits', blank=True, help_text="Produtos que compõem este kit")
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Cria o slug baseado no nome do kit (Ex: "Kit Empreendedor" -> "kit-empreendedor")
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while Kit.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name

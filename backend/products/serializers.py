@@ -1,6 +1,6 @@
 from rest_framework import serializers
 import json
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit
 from django.conf import settings
 
 class VariantSerializer(serializers.ModelSerializer):
@@ -155,3 +155,66 @@ class CouponSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coupon
         fields = ['code', 'discount_percentage', 'is_active']
+
+
+class KitSerializer(serializers.ModelSerializer):
+    # Usamos o mini-serializer do Upsell para mostrar os itens do kit sem pesar o JSON
+    products_details = UpsellProductSerializer(source='products', many=True, read_only=True)
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Kit
+        fields = [
+            'id', 'name', 'slug', 'description', 'image', 
+            'price', 'is_active', 'products', 'products_details', 'created_at'
+        ]
+
+    def get_image(self, obj):
+        if obj.image:
+            return f"{settings.MEDIA_URL}{obj.image}"
+        return None
+
+    def create(self, validated_data):
+        # Remove os produtos para salvar depois
+        validated_data.pop('products', None)
+        
+        request = self.context.get('request')
+        products_data = request.data.get('products_json') 
+        
+        # 👇 CAPTURA A IMAGEM ENVIADA PELO NEXT.JS 👇
+        if request and request.FILES.get('image'):
+            validated_data['image'] = request.FILES.get('image')
+        
+        kit = Kit.objects.create(**validated_data)
+        
+        if products_data:
+            try:
+                product_ids = json.loads(products_data)
+                kit.products.set(product_ids)
+            except Exception as e: 
+                print(f"Erro ao salvar produtos no kit: {e}")
+                
+        return kit
+
+    def update(self, instance, validated_data):
+        # Remove os produtos para salvar depois
+        validated_data.pop('products', None)
+        
+        request = self.context.get('request')
+        products_data = request.data.get('products_json')
+
+        # 👇 ATUALIZA A IMAGEM ENVIADA PELO NEXT.JS 👇
+        if request and request.FILES.get('image'):
+            instance.image = request.FILES.get('image')
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if products_data:
+            try:
+                product_ids = json.loads(products_data)
+                instance.products.set(product_ids)
+            except: pass
+
+        return instance

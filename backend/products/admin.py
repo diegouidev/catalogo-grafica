@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -35,3 +35,10 @@ class CouponAdmin(admin.ModelAdmin):
 class FinishingAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+@admin.register(Kit)
+class KitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'price', 'is_active', 'created_at')
+    search_fields = ('name',)
+    filter_horizontal = ('products',)
+    prepopulated_fields = {'slug': ('name',)}

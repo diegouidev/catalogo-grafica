@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Category, Product, Banner, CompanyConfig, Coupon, Finishing
-from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer, FinishingSerializer
+from .models import Category, Product, Banner, CompanyConfig, Coupon, Finishing, Kit
+from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer, FinishingSerializer, KitSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -118,3 +118,26 @@ class FinishingViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [IsAuthenticated()]
         return []
+
+
+class KitViewSet(viewsets.ModelViewSet):
+    serializer_class = KitSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ['name', 'description']
+    ordering_fields = ['created_at', 'price']
+
+    def get_queryset(self):
+        # Se for cliente acessando, mostra só os ativos.
+        # No painel admin (onde usamos token), vamos buscar todos no frontend
+        queryset = Kit.objects.all().order_by('-created_at')
+        
+        slug = self.request.query_params.get('slug')
+        is_active = self.request.query_params.get('is_active')
+
+        if slug:
+            queryset = queryset.filter(slug=slug)
+            
+        if is_active == 'true':
+            queryset = queryset.filter(is_active=True)
+
+        return queryset

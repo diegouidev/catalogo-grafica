@@ -11,7 +11,8 @@ import {
     LogOut,
     Ticket,
     Layers,
-    ExternalLink
+    ExternalLink,
+    Gift
 } from "lucide-react";
 import Cookies from 'js-cookie';
 import { useRouter } from "next/navigation";
@@ -26,6 +27,7 @@ export default function Sidebar() {
         { name: "Categorias", icon: Tags, path: "/painel/categorias" },
         { name: "Acabamentos", icon: Layers, path: "/painel/acabamentos" },
         { name: "Banners", icon: ImageIcon, path: "/painel/banners" },
+        { name: "Kits & Combos", icon: Gift, path: "/painel/kits" },
         { name: "Cupons", icon: Ticket, path: "/painel/cupons" },
         { name: "Configurações", icon: Settings, path: "/painel/configuracoes" },
     ];
