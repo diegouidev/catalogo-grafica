@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit, ExitPopupConfig
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -42,3 +42,9 @@ class KitAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     filter_horizontal = ('products',)
     prepopulated_fields = {'slug': ('name',)}
+
+
+@admin.register(ExitPopupConfig)
+class ExitPopupConfigAdmin(admin.ModelAdmin):
+    list_display = ('name', 'coupon_code', 'is_active', 'minimum_cart_value', 'timer_minutes')
+    list_editable = ('is_active',)

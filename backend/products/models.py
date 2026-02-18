@@ -133,3 +133,24 @@ class Kit(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ExitPopupConfig(models.Model):
+    name = models.CharField(max_length=100, help_text="Nome interno para identificação")
+    image = models.ImageField(upload_to='popups/', help_text="Banner que aparecerá (Ex: 600x400px)")
+    coupon_code = models.CharField(max_length=50, default="BEMVINDO", help_text="Código do cupom que será copiado (Ex: PRIMEIRACOMPRA)")
+    
+    # Regras de Exibição
+    is_active = models.BooleanField(default=False, verbose_name="Ativar Pop-up?")
+    minimum_cart_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Mostrar apenas se o carrinho for maior que...")
+    timer_minutes = models.IntegerField(default=5, help_text="Tempo do contador regressivo (em minutos)")
+    
+    # Controle
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Configuração do Pop-up"
+        verbose_name_plural = "Configurações do Pop-up"
+
+    def __str__(self):
+        return f"{self.name} - {'Ativo' if self.is_active else 'Inativo'}"

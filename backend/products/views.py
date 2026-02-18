@@ -1,12 +1,12 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Category, Product, Banner, CompanyConfig, Coupon, Finishing, Kit
-from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer, FinishingSerializer, KitSerializer
+from .models import Category, Product, Banner, CompanyConfig, Coupon, Finishing, Kit, ExitPopupConfig
+from .serializers import CategorySerializer, ProductSerializer, BannerSerializer, CompanyConfigSerializer, CouponSerializer, FinishingSerializer, KitSerializer, ExitPopupConfigSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -141,3 +141,12 @@ class KitViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(is_active=True)
 
         return queryset
+
+class ExitPopupConfigViewSet(viewsets.ModelViewSet):
+    queryset = ExitPopupConfig.objects.all()
+    serializer_class = ExitPopupConfigSerializer
+    permission_classes = [permissions.AllowAny] # Público
+
+    def get_queryset(self):
+        # Retorna apenas o ativo mais recente (ou o primeiro da lista)
+        return ExitPopupConfig.objects.filter(is_active=True).order_by('-created_at')[:1]

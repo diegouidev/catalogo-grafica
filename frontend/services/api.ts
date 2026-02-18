@@ -162,3 +162,15 @@ export const getProductBySlug = async (slug: string) => {
         return null;
     }
 };
+
+export const getExitPopupConfig = async () => {
+    try {
+        const res = await fetch(`${API_URL_ENV}/popup-config/`, { next: { revalidate: 0 }, cache: 'no-store' });
+        if (!res.ok) return null;
+        const data = await res.json();
+        // A API pode retornar lista ou objeto, garantimos pegar o primeiro item
+        if (Array.isArray(data) && data.length > 0) return data[0];
+        if (Array.isArray(data) && data.length === 0) return null;
+        return data; // Se for objeto direto
+    } catch { return null; }
+};

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 import json
-from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit
+from .models import Category, Product, ProductVariant, Banner, CompanyConfig, Coupon, Finishing, Kit, ExitPopupConfig
 from django.conf import settings
 
 class VariantSerializer(serializers.ModelSerializer):
@@ -218,3 +218,9 @@ class KitSerializer(serializers.ModelSerializer):
             except: pass
 
         return instance
+
+
+class ExitPopupConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExitPopupConfig
+        fields = '__all__'

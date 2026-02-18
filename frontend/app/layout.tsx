@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import Analytics from "@/components/Analytics";
+import ExitIntentPopup from "@/components/layout/ExitIntentPopup";
 import { CartProvider } from "@/context/CartContext"; // Importando o novo Provider
 import { Toaster } from 'react-hot-toast';
 import { Suspense } from 'react';
@@ -18,10 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <CartProvider>
             <Suspense fallback={null}>
-                <Analytics />
+              <Analytics />
             </Suspense>
             {children}
-            <Toaster position="bottom-center" /> {/* Adicione aqui */}
+            <Toaster position="bottom-center" />
+            <ExitIntentPopup />
           </CartProvider>
         </ThemeProvider>
       </body>
