@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getProductBySlug, getImageUrl, getCompanyConfig } from "@/services/api";
 import ProductDetails from "@/components/products/ProductDetails";
+import ProductDetailsM2 from "@/components/products/ProductDetailsM2";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import FloatingCart from "@/components/cart/FloatingCart";
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // AWAIT OBRIGATÓRIO AQUI:
   const resolvedParams = await params;
   const product = await getProductBySlug(resolvedParams.slug);
-  
+
   if (!product) {
     return { title: 'Produto não encontrado | Cloud Design' };
   }
@@ -47,7 +48,7 @@ export default async function ProductPage({ params }: Props) {
         <h1 className="text-3xl font-black mb-4">Produto não encontrado 😕</h1>
         <p className="text-gray-400 mb-6">O slug buscado foi: {slug}</p>
         <a href="/" className="bg-brand-blue px-6 py-3 rounded-full font-bold hover:bg-white hover:text-brand-blue transition-colors">
-            Voltar ao Catálogo
+          Voltar ao Catálogo
         </a>
       </div>
     );
@@ -55,20 +56,24 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <main className="min-h-screen flex flex-col bg-[#05060a]">
-        <Header />
-        
-        <section className="max-w-7xl mx-auto px-4 py-10 md:py-16 flex-grow w-full">
-            <nav className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">
-                <a href="/" className="hover:text-brand-blue transition-colors">Início</a> 
-                <span className="mx-2">/</span> 
-                <span className="text-white">{product.name}</span>
-            </nav>
+      <Header />
 
-            <ProductDetails product={product} />
-        </section>
+      <section className="max-w-7xl mx-auto px-4 py-10 md:py-16 flex-grow w-full">
+        <nav className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-8">
+          <a href="/" className="hover:text-brand-blue transition-colors">Início</a>
+          <span className="mx-2">/</span>
+          <span className="text-white">{product.name}</span>
+        </nav>
 
-        <Footer config={companyConfig} />
-        <FloatingCart />
+        {product.is_meter_price ? (
+          <ProductDetailsM2 product={product} />
+        ) : (
+          <ProductDetails product={product} />
+        )}
+      </section>
+
+      <Footer config={companyConfig} />
+      <FloatingCart />
     </main>
   );
 }

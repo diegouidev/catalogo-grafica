@@ -3,17 +3,22 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Clock, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getImageUrl, registerView } from "@/services/api"; // <--- Importe a função nova
+import { getImageUrl, registerView } from "@/services/api";
 import Link from "next/link";
-
 
 export default function ProductCard({ product }: { product: any }) {
     const { addToCart } = useCart();
-    const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+
+    // Adicionada proteção: se o produto for por m², pode não ter variantes cadastradas
+    const [selectedVariant, setSelectedVariant] = useState(
+        product.variants && product.variants.length > 0 ? product.variants[0] : null
+    );
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const handleImageClick = () => {
         setIsModalOpen(true);
-        registerView(product.id); // <--- Chama o backend
+        registerView(product.id);
     };
 
     const handleAdd = () => {
@@ -34,20 +39,18 @@ export default function ProductCard({ product }: { product: any }) {
                     onClick={handleImageClick}
                 >
                     <img
-                        src={getImageUrl(product.image)} // <--- Uso simplificado e corrigido
+                        src={getImageUrl(product.image)}
                         alt={product.name}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                         onError={(e) => {
-                            e.currentTarget.onerror = null; // Previne loop
-                            e.currentTarget.src = "/logo-oficial.png"; // Fallback local
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/logo-oficial.png";
                         }}
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Eye className="text-white" size={32} />
                     </div>
                 </div>
-
-                {/* ... (Resto do componente ProductCard igual ao anterior) ... */}
 
                 <div className="flex flex-col flex-1">
                     <div className="flex justify-between items-start mb-2">
@@ -86,40 +89,76 @@ export default function ProductCard({ product }: { product: any }) {
                         <span>Produção: {product.production_time}</span>
                     </div>
 
+                    {/* LÓGICA CONDICIONAL: Produto Padrão vs Produto M2 */}
                     <div className="mt-auto space-y-4">
-                        <div className="bg-black/20 p-3 rounded-xl border border-white/5">
-                            <select
-                                className="w-full bg-transparent text-white text-sm outline-none font-bold cursor-pointer"
-                                onChange={(e) => {
-                                    const variant = product.variants.find((v: any) => v.id === Number(e.target.value));
-                                    setSelectedVariant(variant);
-                                }}
-                            >
-                                {product.variants?.map((v: any) => (
-                                    <option key={v.id} value={v.id} className="dark:bg-brand-navy text-white">
-                                        {v.name} Uni - R$ {Number(v.price).toFixed(2)}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        {product.is_meter_price ? (
+                            /* --- LAYOUT PARA PRODUTO VENDIDO POR M2 --- */
+                            <>
+                                <div className="bg-brand-blue/10 p-3 rounded-xl border border-brand-blue/20 flex items-center justify-center h-[46px]">
+                                    <span className="text-brand-blue font-bold text-xs uppercase tracking-widest">
+                                        Vendido por M²
+                                    </span>
+                                </div>
 
-                        <div className="flex items-center justify-between pt-2">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] text-gray-500 font-bold uppercase">Valor</span>
-                                <span className="text-2xl font-black text-white">
-                                    R$ {Number(selectedVariant?.price || 0).toFixed(2)}
-                                </span>
-                                <span className="text-[10px] text-gray-500 font-bold pt-2">Quant. {selectedVariant?.name} Uni</span>
-                            </div>
-                        </div>
-                        <button onClick={handleAdd} className="w-full justify-center bg-brand-blue hover:bg-brand-blue/80 text-white px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-brand-blue/20 transition-all active:scale-95">
-                            <ShoppingCart size={18} />
-                            Adicionar ao Carrinho
-                        </button>
+                                <div className="flex items-center justify-between pt-2">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase">Valor Base</span>
+                                        <span className="text-2xl font-black text-white">
+                                            R$ {Number(selectedVariant?.price || 0).toFixed(2)}
+                                        </span>
+                                        <span className="text-[10px] text-brand-blue font-bold pt-2 uppercase">por m²</span>
+                                    </div>
+                                </div>
+                                <Link
+                                    href={`/produto/${product.slug}`}
+                                    className="w-full flex justify-center bg-brand-blue hover:bg-brand-blue/80 text-white px-5 py-3 rounded-xl font-black text-sm items-center gap-2 shadow-lg shadow-brand-blue/20 transition-all active:scale-95"
+                                >
+                                    <Eye size={18} />
+                                    Ver Detalhes
+                                </Link>
+                            </>
+                        ) : (
+                            /* --- LAYOUT ORIGINAL PARA PRODUTO PADRÃO --- */
+                            <>
+                                <div className="bg-black/20 p-3 rounded-xl border border-white/5">
+                                    <select
+                                        className="w-full bg-transparent text-white text-sm outline-none font-bold cursor-pointer"
+                                        value={selectedVariant?.id || ''}
+                                        onChange={(e) => {
+                                            const variant = product.variants.find((v: any) => v.id === Number(e.target.value));
+                                            setSelectedVariant(variant);
+                                        }}
+                                    >
+                                        {product.variants?.map((v: any) => (
+                                            <option key={v.id} value={v.id} className="dark:bg-brand-navy text-white">
+                                                {v.name} Uni - R$ {Number(v.price).toFixed(2)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-500 font-bold uppercase">Valor</span>
+                                        <span className="text-2xl font-black text-white">
+                                            R$ {Number(selectedVariant?.price || 0).toFixed(2)}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500 font-bold pt-2">
+                                            Quant. {selectedVariant?.name || '1'} Uni
+                                        </span>
+                                    </div>
+                                </div>
+                                <button onClick={handleAdd} disabled={!selectedVariant} className="w-full justify-center bg-brand-blue hover:bg-brand-blue/80 text-white px-5 py-3 rounded-xl font-black text-sm flex items-center gap-2 shadow-lg shadow-brand-blue/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <ShoppingCart size={18} />
+                                    Adicionar ao Carrinho
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
 
+            {/* Modal de Imagem (Mantido exatamente igual) */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsModalOpen(false)}>
                     <button className="absolute top-5 right-5 text-white bg-white/10 p-2 rounded-full hover:bg-red-500 transition-colors"><X size={24} /></button>

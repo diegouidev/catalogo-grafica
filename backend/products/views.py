@@ -27,7 +27,18 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ['views_count', 'id']
     filterset_fields = ['category__slug', 'is_featured']
     search_fields = ['name', 'description']
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_permissions(self):
+        # 1. EXCEÇÃO: Qualquer visitante pode incrementar a visualização (POST)
+        if self.action == 'increment_view':
+            return [permissions.AllowAny()]
+            
+        # 2. BLOQUEIO: Apenas você (Admin) pode Criar, Editar ou Deletar produtos
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated()]
+            
+        # 3. REGRA PADRÃO: Qualquer um pode ver (GET), mas só admin pode o resto
+        return [permissions.IsAuthenticatedOrReadOnly()]
 
     @action(detail=True, methods=['post'])
     def increment_view(self, request, pk=None):

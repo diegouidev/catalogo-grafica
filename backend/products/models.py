@@ -34,6 +34,18 @@ class Product(models.Model):
         symmetrical=False, 
         help_text="Selecione produtos para a seção 'Compre Junto'"
     )
+
+    is_meter_price = models.BooleanField(
+        default=False,
+        verbose_name="Vendido por M²",
+        help_text="Marque se este produto usa calculadora de largura x altura (ex: Lonas, Adesivos)"
+    )
+
+    # (Opcional) Se você quiser flexibilidade no futuro para mudar o limite de 0.5m²
+    # min_meter_area = models.DecimalField(
+    #     max_digits=5, decimal_places=2, default=0.50,
+    #     verbose_name="Área Mínima Cobrada (m²)"
+    # )
     
     def save(self, *args, **kwargs):
         if not self.slug:
