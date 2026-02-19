@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next';
 const BASE_URL = 'https://cloudgraficarapida.com.br';
 
 // Mudamos para a URL PÚBLICA (que com certeza funciona, independente se tá rodando no host ou no docker)
-const API_URL = "https://cloudgraficarapida.com.br/api"; 
+const API_URL = "http://backend:8000/api"; 
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Rotas estáticas que sempre devem existir
