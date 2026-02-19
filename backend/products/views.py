@@ -12,6 +12,7 @@ from .serializers import CategorySerializer, ProductSerializer, BannerSerializer
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -26,6 +27,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ['views_count', 'id']
     filterset_fields = ['category__slug', 'is_featured']
     search_fields = ['name', 'description']
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     @action(detail=True, methods=['post'])
     def increment_view(self, request, pk=None):
@@ -69,6 +71,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class BannerViewSet(viewsets.ModelViewSet): 
     queryset = Banner.objects.filter(is_active=True)
     serializer_class = BannerSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -78,6 +81,7 @@ class BannerViewSet(viewsets.ModelViewSet):
 class CompanyConfigViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CompanyConfig.objects.all()
     serializer_class = CompanyConfigSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 class DashboardStatsView(APIView):
     permission_classes = [IsAuthenticated] # Apenas logados veem os dados
@@ -96,6 +100,7 @@ class DashboardStatsView(APIView):
 class CouponViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Coupon.objects.filter(is_active=True)
     serializer_class = CouponSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     @action(detail=False, methods=['get'])
     def validate(self, request):
@@ -113,6 +118,7 @@ class CouponViewSet(viewsets.ReadOnlyModelViewSet):
 class FinishingViewSet(viewsets.ModelViewSet):
     queryset = Finishing.objects.all()
     serializer_class = FinishingSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
@@ -125,6 +131,7 @@ class KitViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'price']
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         # Se for cliente acessando, mostra só os ativos.
