@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "@/components/cart/CartDrawer";
+import SearchBar from "@/components/layout/SearchBar";
 
 export default function Header() {
     const { theme, setTheme } = useTheme();
@@ -58,6 +59,9 @@ export default function Header() {
                                 className="hidden dark:block"
                             />
                         </a>
+                    </div>
+                    <div className="flex-1 max-w-lg mx-8">
+                        <SearchBar />
                     </div>
 
                     <div className="flex items-center gap-4">

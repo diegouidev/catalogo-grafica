@@ -8,7 +8,6 @@ import CategoryBar from "@/components/products/CategoryBar";
 import ProductCard from "@/components/products/ProductCard";
 import Footer from "@/components/layout/Footer";
 import FloatingCart from "@/components/cart/FloatingCart";
-import SearchBar from "@/components/layout/SearchBar";
 
 function LoadingScreen() {
   return (
@@ -121,7 +120,6 @@ function HomeContent() {
       {!currentSearch && <Banner banners={banners} />}
 
       <section className="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
-        <div className="mb-8"><SearchBar /></div>
 
         <div className="mb-10">
           <p className="text-[10px] font-bold text-brand-blue uppercase tracking-[0.2em] mb-4 pl-2">
