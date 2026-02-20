@@ -35,10 +35,10 @@ export const getImageUrl = (path: string | null | undefined) => {
 export const getBanners = async () => {
     const res = await fetch(`${API_URL_ENV}/banners/`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     // Se vier paginado (com results), pega os results. Se não, pega o data normal.
-    return data.results || data; 
+    return data.results || data;
 };
 
 export const getProducts = async (categorySlug?: string, searchTerm?: string, page: number = 1) => {
@@ -73,19 +73,19 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string, pa
         // 👇 MUDANÇA DE OURO 2: 
         // Retornamos o objeto COMPLETO (com o link de "next") e não apenas a array.
         // O page.tsx que criamos no passo anterior já sabe lidar com isso!
-        return data; 
+        return data;
 
     } catch (error) {
         console.error("Erro no getProducts:", error);
         // Retorna um objeto seguro para não quebrar a tela de paginação
-        return { results: [], next: null }; 
+        return { results: [], next: null };
     }
 };
 
 export const getCategories = async () => {
     const res = await fetch(`${API_URL_ENV}/categories/`);
     if (!res.ok) return [];
-    
+
     const data = await res.json();
     // Mesmo esquema de proteção
     return data.results || data;
@@ -95,8 +95,10 @@ export const getCompanyConfig = async () => {
     try {
         const res = await fetch(`${API_URL_ENV}/company-config/`, { next: { revalidate: 600 } });
         if (!res.ok) return null;
+
         const data = await res.json();
-        return data[0];
+        const configList = data.results || data;
+        return Array.isArray(configList) && configList.length > 0 ? configList[0] : null;
     } catch { return null; }
 };
 

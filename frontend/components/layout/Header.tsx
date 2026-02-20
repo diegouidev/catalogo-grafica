@@ -45,19 +45,15 @@ export default function Header() {
                 <div className="container mx-auto px-4 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <a href="/">
-                            <Image
+                            <img
                                 src="/logo-oficial.png"
                                 alt="Cloud Design"
-                                width={180}
-                                height={60}
-                                className="dark:hidden"
+                                className="w-[180px] h-auto dark:hidden"
                             />
-                            <Image
+                            <img
                                 src="/logo-cloud-branca.png"
                                 alt="Cloud Design"
-                                width={180}
-                                height={60}
-                                className="hidden dark:block"
+                                className="w-[180px] h-auto hidden dark:block"
                             />
                         </a>
                     </div>
