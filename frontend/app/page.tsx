@@ -86,7 +86,7 @@ function HomeContent() {
         const response = await getProducts(currentCategorySlug, currentSearch, page);
         
         // O Django com paginação retorna um objeto: { count, next, previous, results }
-        const fetchedProducts = response.results || response; 
+        const fetchedProducts = Array.isArray(response) ? response : (response?.results || []);
         const hasNext = !!response.next; // Se o Django mandou um link "next", tem mais página
         
         setHasNextPage(hasNext);
