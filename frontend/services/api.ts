@@ -32,11 +32,13 @@ export const getImageUrl = (path: string | null | undefined) => {
     return `${API_BASE_URL}/${cleanPath}`;
 };
 
-// ... (Mantenha as funções getBanners, getProducts, etc como estavam)
 export const getBanners = async () => {
     const res = await fetch(`${API_URL_ENV}/banners/`, { next: { revalidate: 300 } });
     if (!res.ok) return [];
-    return res.json();
+    
+    const data = await res.json();
+    // Se vier paginado (com results), pega os results. Se não, pega o data normal.
+    return data.results || data; 
 };
 
 export const getProducts = async (categorySlug?: string, searchTerm?: string, page: number = 1) => {
@@ -83,7 +85,10 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string, pa
 export const getCategories = async () => {
     const res = await fetch(`${API_URL_ENV}/categories/`);
     if (!res.ok) return [];
-    return res.json();
+    
+    const data = await res.json();
+    // Mesmo esquema de proteção
+    return data.results || data;
 };
 
 export const getCompanyConfig = async () => {

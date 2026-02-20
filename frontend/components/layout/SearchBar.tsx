@@ -41,11 +41,12 @@ export default function SearchBar() {
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/kits/?search=${query}`).catch(() => null)
                 ]);
 
+                // Extrai os dados
+                const productsData = productsRes?.ok ? await productsRes.json() : { results: [] };
+                const kitsData = kitsRes?.ok ? await kitsRes.json() : { results: [] };
+
                 const productsList = Array.isArray(productsData) ? productsData : (productsData?.results || []);
                 const kitsList = Array.isArray(kitsData) ? kitsData : (kitsData?.results || []);
-
-                const productsList = productsData.results || productsData || [];
-                const kitsList = kitsData.results || kitsData || [];
 
                 // Formata os Produtos
                 const formattedProducts = productsList.map((p: any) => ({
