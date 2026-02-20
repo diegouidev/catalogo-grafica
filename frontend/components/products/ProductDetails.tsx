@@ -25,8 +25,8 @@ export default function ProductDetails({ product }: { product: any }) {
         if (product?.id) registerView(product.id);
 
         getCompanyConfig().then(response => {
-            const data = response.results || response;
-            const configItem = Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data;
+            const configList = response?.results || response;
+            const configItem = Array.isArray(configList) ? configList[0] : configList;
 
             if (configItem && configItem.whatsapp) {
                 setWhatsappNumber(configItem.whatsapp.replace(/\D/g, ""));

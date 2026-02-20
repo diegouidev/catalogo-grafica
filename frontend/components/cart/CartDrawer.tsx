@@ -30,8 +30,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
             fetch(`${apiUrl}/company-config/`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.length > 0) {
-                        setWhatsappNumber(data[0].whatsapp.replace(/\D/g, ""));
+                    const configList = data.results || data;
+                    if (configList && configList.length > 0) {
+                        setWhatsappNumber(configList[0].whatsapp.replace(/\D/g, ""));
                     }
                 })
                 .catch(() => console.error("Erro ao carregar configuração"));
@@ -98,8 +99,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         message += `\n_Aguardando confirmação para iniciar a produção!_ 🎨`;
 
         const cleanMessage = message.trim();
-        const encodedMessage = encodeURIComponent(cleanMessage);
-
+        const encodedMessage = window.encodeURIComponent(cleanMessage).replace(/%20/g, "+");
         window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
     };
 

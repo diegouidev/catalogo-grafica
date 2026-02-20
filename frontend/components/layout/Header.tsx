@@ -18,19 +18,20 @@ export default function Header() {
     useEffect(() => {
         async function loadCompanyConfig() {
             try {
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/company-config/`
-                );
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/company-config/`);
                 const data = await res.json();
 
-                if (data.length > 0) {
-                    setWhatsapp(data[0].whatsapp);
+                // BLINDAGEM: Lida com a paginação do Django
+                const configList = data.results || data;
+
+                if (configList && configList.length > 0) {
+                    // BLINDAGEM: Tira parênteses, traços e espaços para não quebrar o link!
+                    setWhatsapp(configList[0].whatsapp.replace(/\D/g, ""));
                 }
             } catch (error) {
                 console.error("Erro ao carregar WhatsApp", error);
             }
         }
-
         loadCompanyConfig();
     }, []);
 
