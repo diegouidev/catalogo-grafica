@@ -39,7 +39,7 @@ export const getBanners = async () => {
     return res.json();
 };
 
-export const getProducts = async (categorySlug?: string, searchTerm?: string) => {
+export const getProducts = async (categorySlug?: string, searchTerm?: string, page: number = 1) => {
     const params = new URLSearchParams();
 
     if (categorySlug && categorySlug !== 'todos') {
@@ -50,8 +50,10 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string) =>
         params.append('search', searchTerm);
     }
 
+    // 👇 O SEGREDO ESTÁ AQUI: Enviamos a página para o Django
+    params.append('page', page.toString());
+
     const queryString = params.toString();
-    // Garante que a URL termina com barra antes dos parâmetros para evitar redirects do Django
     const url = `${API_URL_ENV}/products/?${queryString}`;
 
     try {
@@ -59,8 +61,6 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string) =>
             next: { revalidate: 0 },
             headers: {
                 'Content-Type': 'application/json',
-                // Às vezes ajuda a evitar cache agressivo
-                //'Cache-Control': 'no-cache'
             }
         });
 
@@ -68,19 +68,15 @@ export const getProducts = async (categorySlug?: string, searchTerm?: string) =>
 
         const data = await res.json();
 
-        // --- CORREÇÃO DE OURO ---
-        // Verifica se a resposta é paginada (tem 'results') ou se é uma lista direta
-        if (data.results && Array.isArray(data.results)) {
-            return data.results;
-        } else if (Array.isArray(data)) {
-            return data;
-        } else {
-            return []; // Retorna vazio se não entender o formato
-        }
+        // 👇 MUDANÇA DE OURO 2: 
+        // Retornamos o objeto COMPLETO (com o link de "next") e não apenas a array.
+        // O page.tsx que criamos no passo anterior já sabe lidar com isso!
+        return data; 
 
     } catch (error) {
         console.error("Erro no getProducts:", error);
-        return []; // Evita quebrar a tela com erro
+        // Retorna um objeto seguro para não quebrar a tela de paginação
+        return { results: [], next: null }; 
     }
 };
 

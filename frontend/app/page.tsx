@@ -24,7 +24,7 @@ function HomeContent() {
   const currentCategorySlug = searchParams.get('category__slug') || 'todos';
   const currentSearch = searchParams.get('search') || '';
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [companyConfig, setCompanyConfig] = useState(null);
@@ -32,6 +32,11 @@ function HomeContent() {
 
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+
+  // --- NOVOS ESTADOS DE PAGINAÇÃO ---
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     async function loadStaticData() {
@@ -44,13 +49,8 @@ function HomeContent() {
         ]);
         setBanners(b);
 
-        // --- MUDANÇA: INJETAMOS A CATEGORIA "KITS" MANUALMENTE ---
-        // Se houver kits cadastrados, adicionamos o botão "Kits & Combos" logo após o "Todos"
-        // Criamos uma cópia para não mutar o array original
         const kitsCategory = k.length > 0 ? [{ id: 'kits-cat', name: '🔥 Kits & Combos', slug: 'kits' }] : [];
         setCategories([...kitsCategory, ...c]);
-        // -----------------------------------------------------------
-
         setCompanyConfig(config);
         setKits(k);
       } catch (err) {
@@ -62,26 +62,50 @@ function HomeContent() {
     loadStaticData();
   }, []);
 
+  // --- RESETA A PÁGINA SE MUDAR A CATEGORIA OU BUSCA ---
+  useEffect(() => {
+    setPage(1);
+  }, [currentCategorySlug, currentSearch]);
+
+  // --- CARREGA OS PRODUTOS (PAGINADOS) ---
   useEffect(() => {
     async function loadDynamicProducts() {
-      // Se a categoria selecionada for "kits", não buscamos produtos na API de produtos normais
       if (currentCategorySlug === 'kits') {
         setProducts([]);
         return;
       }
 
-      setLoadingProducts(true);
+      if (page === 1) {
+        setLoadingProducts(true);
+      } else {
+        setLoadingMore(true);
+      }
+
       try {
-        const data = await getProducts(currentCategorySlug, currentSearch);
-        setProducts(data);
+        // Passando a página atual para a API
+        const response = await getProducts(currentCategorySlug, currentSearch, page);
+        
+        // O Django com paginação retorna um objeto: { count, next, previous, results }
+        const fetchedProducts = response.results || response; 
+        const hasNext = !!response.next; // Se o Django mandou um link "next", tem mais página
+        
+        setHasNextPage(hasNext);
+
+        if (page === 1) {
+          setProducts(fetchedProducts);
+        } else {
+          // Se for página 2+, junta os produtos antigos com os novos
+          setProducts(prev => [...prev, ...fetchedProducts]);
+        }
       } catch (err) {
         console.error("Erro ao carregar produtos:", err);
       } finally {
         setLoadingProducts(false);
+        setLoadingMore(false);
       }
     }
     loadDynamicProducts();
-  }, [currentCategorySlug, currentSearch]);
+  }, [currentCategorySlug, currentSearch, page]);
 
   const handleCategoryChange = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -98,16 +122,11 @@ function HomeContent() {
     if (currentCategorySlug === 'kits') return "COMBOS PROMOCIONAIS";
 
     const cat = categories.find((c: any) => c.slug === currentCategorySlug);
-    // Remove emojis do nome da categoria se houver, só pra exibir limpo no título
     const cleanName = cat ? cat.name.replace(/🔥/g, '').trim() : "PRODUTOS";
     return cleanName.toUpperCase();
   };
 
-  // Lógica de Exibição
-  // Mostra kits se tiver kits E não for busca E (estiver em 'todos' OU 'kits')
   const showKits = kits.length > 0 && !currentSearch && (currentCategorySlug === 'todos' || currentCategorySlug === 'kits');
-
-  // Mostra produtos normais se NÃO estiver na aba 'kits'
   const showProducts = currentCategorySlug !== 'kits';
 
   if (loadingInitial) return <LoadingScreen />;
@@ -116,7 +135,6 @@ function HomeContent() {
     <main className="min-h-screen flex flex-col bg-[#05060a]">
       <Header />
 
-      {/* Esconde Banner se estiver buscando algo */}
       {!currentSearch && <Banner banners={banners} />}
 
       <section className="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
@@ -131,9 +149,9 @@ function HomeContent() {
             onSelectCategory={handleCategoryChange}
           />
 
-          {/* VITRINE DE KITS */}
           {showKits && (
             <div className="mb-12 animate-in fade-in zoom-in duration-500 mt-8">
+              {/* ... (Seu layout de Kits continua intacto aqui, ocultei por brevidade) ... */}
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">
                   {currentCategorySlug === 'kits' ? 'Todas as ' : '🔥 '}
@@ -178,7 +196,6 @@ function HomeContent() {
           )}
         </div>
 
-        {/* LISTA DE PRODUTOS NORMAIS (Só mostra se NÃO for categoria Kits) */}
         {showProducts && (
           <>
             <div className="flex items-center gap-4 mb-8">
@@ -192,8 +209,23 @@ function HomeContent() {
             {loadingProducts ? (
               <div className="text-center py-20"><p className="text-brand-blue animate-pulse font-bold">Buscando produtos...</p></div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {products.map((product: any) => <ProductCard key={product.id} product={product} />)}
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {products.map((product: any) => <ProductCard key={product.id} product={product} />)}
+                </div>
+                
+                {/* 👇 BOTÃO DE CARREGAR MAIS 👇 */}
+                {hasNextPage && (
+                  <div className="flex justify-center mt-12 mb-8">
+                    <button 
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={loadingMore}
+                      className="bg-brand-blue/10 hover:bg-brand-blue/20 text-brand-blue border border-brand-blue/30 px-8 py-4 rounded-xl font-black text-sm uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-brand-blue/20"
+                    >
+                      {loadingMore ? 'Carregando mais produtos...' : 'Ver mais produtos'}
+                    </button>
+                  </div>
+                )}
 
                 {products.length === 0 && (
                   <div className="col-span-full text-center py-20 text-gray-500 bg-white/5 rounded-3xl border border-white/5">
@@ -201,7 +233,7 @@ function HomeContent() {
                     <button onClick={() => router.push('/')} className="text-brand-blue text-sm font-bold uppercase tracking-widest mt-4 hover:underline">Limpar Filtros</button>
                   </div>
                 )}
-              </div>
+              </>
             )}
           </>
         )}
