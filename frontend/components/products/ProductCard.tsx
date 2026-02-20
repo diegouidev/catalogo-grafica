@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, Clock, Eye, X, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getImageUrl, registerView } from "@/services/api";
+import { getImageUrl, PIX_MULTIPLIER, registerView } from "@/services/api";
 import Link from "next/link";
 
 export default function ProductCard({ product }: { product: any }) {
@@ -142,6 +142,9 @@ export default function ProductCard({ product }: { product: any }) {
                                         <span className="text-[10px] text-gray-500 font-bold uppercase">Valor</span>
                                         <span className="text-2xl font-black text-white">
                                             R$ {Number(selectedVariant?.price || 0).toFixed(2)}
+                                        </span>
+                                        <span className="block text-[11px] text-green-400 font-bold mt-0.5">
+                                            ou R$ {(Number(selectedVariant?.price || product?.price || 0) * PIX_MULTIPLIER).toFixed(2)} no PIX
                                         </span>
                                         <span className="text-[10px] text-gray-500 font-bold pt-2">
                                             Quant. {selectedVariant?.name || '1'} Uni

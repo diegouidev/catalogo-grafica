@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket, Truck } from "lucide-react";
+import { X, MessageCircle, User, Phone, ArrowRight, ShoppingCart, Trash2, Ticket, Truck, PackagePlus } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { getImageUrl } from "@/services/api";
+import { getImageUrl, PIX_DISCOUNT_PERCENT, PIX_MULTIPLIER } from "@/services/api";
 
 export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const { cart, removeFromCart, coupon, applyCoupon, removeCoupon } = useCart();
@@ -53,6 +54,17 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
     const goalReached = total >= GOAL_AMOUNT;
     // ------------------------------------
 
+    // --- LÓGICA DO COMPRE JUNTO (UPSELL) ---
+    // 1. Pega todos os upsells dos produtos que já estão no carrinho
+    const allUpsells = cart.flatMap((item: any) => item.upsell_products || []);
+
+    // 2. Filtra para não repetir produtos e não mostrar o que já tá no carrinho
+    const upsellSuggestions = allUpsells.filter((upsell: any, index: number, self: any[]) =>
+        self.findIndex(u => u.id === upsell.id) === index && // Remove duplicados
+        !cart.some((cartItem: any) => cartItem.id === upsell.id) // Remove se já comprou
+    ).slice(0, 3); // Mostra no máximo 3 sugestões para não poluir
+    // ----------------------------------------
+
     const handleApplyCoupon = async () => {
         const res = await applyCoupon(couponInput);
         if (res.success) toast.success(`Cupom de ${res.discount}% aplicado! 🎫`);
@@ -91,6 +103,7 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         }
 
         message += `\n✅ *TOTAL FINAL: R$ ${total.toFixed(2)}*\n`;
+        message += `🟩 *TOTAL NO PIX (${PIX_DISCOUNT_PERCENT}% OFF): R$ ${(total * PIX_MULTIPLIER).toFixed(2)}*\n`;
 
         if (goalReached) {
             message += `🚚 *BÔNUS ALCANÇADO:* Frete Grátis!\n`;
@@ -99,8 +112,8 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
         message += `\n_Aguardando confirmação para iniciar a produção!_ 🎨`;
 
         const cleanMessage = message.trim();
-        const encodedMessage = window.encodeURIComponent(cleanMessage).replace(/%20/g, "+");
-        window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
+        const encodedMessage = encodeURIComponent(cleanMessage);
+        window.open(`https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`, "_blank");
     };
 
     return (
@@ -172,6 +185,43 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                                 ))
                             )}
 
+                            {/* --- VITRINE DE COMPRE JUNTO --- */}
+                            {upsellSuggestions.length > 0 && (
+                                <div className="mt-8 border-t border-white/10 pt-6 animate-in fade-in slide-in-from-bottom-4">
+                                    <h4 className="text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-4">
+                                        <PackagePlus size={16} className="text-brand-blue" /> Aproveite e leve também
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {upsellSuggestions.map((upsell: any) => (
+                                            <div key={upsell.id} className="flex items-center gap-3 bg-black/40 p-3 rounded-2xl border border-white/5 hover:border-brand-blue/30 transition-all group">
+                                                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                                                    <img
+                                                        src={getImageUrl(upsell.image)}
+                                                        alt={upsell.name}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                        onError={(e) => { e.currentTarget.src = "/logo-oficial.png"; }}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h5 className="text-white text-[11px] font-bold truncate group-hover:text-brand-blue transition-colors">{upsell.name}</h5>
+                                                    <p className="text-gray-400 text-[10px] font-bold">
+                                                        a partir de <span className="text-green-400">R$ {Number(upsell.starting_price).toFixed(2)}</span>
+                                                    </p>
+                                                </div>
+                                                <Link
+                                                    href={`/produto/${upsell.slug}`}
+                                                    onClick={onClose}
+                                                    className="bg-white/10 hover:bg-brand-blue text-white p-2.5 rounded-xl transition-colors shrink-0 shadow-lg"
+                                                >
+                                                    <ShoppingCart size={14} />
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {/* ------------------------------- */}
+
                             {cart.length > 0 && (
                                 <div className="mt-6 p-4 bg-brand-blue/5 rounded-2xl border border-brand-blue/20">
                                     <div className="flex gap-2">
@@ -222,6 +272,9 @@ export default function CartDrawer({ isOpen, onClose }: { isOpen: boolean, onClo
                         <div className="text-right">
                             {coupon && <p className="text-xs text-gray-500 line-through mb-[-4px]">R$ {subtotal.toFixed(2)}</p>}
                             <p className="text-3xl font-black text-brand-blue">R$ {total.toFixed(2)}</p>
+                            <p className="text-xs font-bold text-green-400 mt-1">
+                                ou R$ {(total * PIX_MULTIPLIER).toFixed(2)} no PIX ({PIX_DISCOUNT_PERCENT}% OFF)
+                            </p>
                         </div>
                     </div>
 

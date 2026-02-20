@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/context/CartContext";
-import { registerView, getImageUrl, getCompanyConfig } from "@/services/api";
+import { registerView, getImageUrl, getCompanyConfig, PIX_MULTIPLIER, PIX_DISCOUNT_PERCENT } from "@/services/api";
 import { ShoppingCart, ShieldCheck, Clock, Truck, MessageCircle, Info, Maximize } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -189,6 +189,9 @@ export default function ProductDetailsM2({ product }: { product: any }) {
                             <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Total Estimado</span>
                             <span className="text-4xl font-black text-white tracking-tighter">
                                 R$ {currentPrice.toFixed(2)}
+                            </span>
+                            <span className="text-sm text-green-400 font-bold tracking-wide">
+                                ou R$ {(currentPrice * PIX_MULTIPLIER).toFixed(2)} no PIX ({PIX_DISCOUNT_PERCENT}% OFF)
                             </span>
                         </div>
                     </div>

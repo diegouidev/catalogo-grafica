@@ -9,6 +9,10 @@ const API_URL = isServer
 // Ex: https://seu-site.com.br/api -> https://seu-site.com.br
 export const API_BASE_URL = API_URL_ENV.replace('/api', '');
 
+// --- CONFIGURAÇÕES GLOBAIS DA LOJA ---
+export const PIX_DISCOUNT_PERCENT = 5; // A porcentagem (para mostrar no texto)
+export const PIX_MULTIPLIER = 1 - (PIX_DISCOUNT_PERCENT / 100); // O cálculo matemático (0.95)
+
 
 
 // --- NOVA FUNÇÃO ROBUSTA DE IMAGEM ---
