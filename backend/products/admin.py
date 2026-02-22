@@ -13,9 +13,9 @@ class VariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    # Adicionando 'production_time' na listagem para facilitar o controle
-    list_display = ('name', 'category', 'production_time', 'views_count', 'is_active')
-    list_filter = ('category', 'is_active')
+    list_display = ('name', 'category', 'is_on_sale', 'discount_percent', 'is_active') 
+    list_filter = ('category', 'is_on_sale', 'is_active')
+    list_editable = ('is_on_sale', 'discount_percent', 'is_active')
     search_fields = ('name', 'description')
     inlines = [VariantInline]
     readonly_fields = ('views_count',)

@@ -62,9 +62,25 @@ export default function ProductDetails({ product }: { product: any }) {
         return currPrice < prevPrice ? current : prev;
     }, product.variants?.[0])?.id;
 
+    // --- LÓGICA DE PROMOÇÃO ---
+    const isOnSale = product.is_on_sale;
+    const discountPercent = product.discount_percent || 0;
+    const originalPrice = Number(selectedVariant?.price || 0);
+
+    // Calcula o preço final com desconto
+    const currentPrice = isOnSale
+        ? originalPrice * (1 - (discountPercent / 100))
+        : originalPrice;
+
     // --- AÇÕES ---
     const handleAddToCart = () => {
-        addToCart(product, selectedVariant);
+        // Criamos uma cópia da variação, mas forçando o PREÇO COM DESCONTO para ir pro carrinho
+        const variantToCart = {
+            ...selectedVariant,
+            price: currentPrice
+        };
+
+        addToCart(product, variantToCart);
         toast.success("Produto adicionado ao carrinho!", {
             style: { background: '#00AEEF', color: '#fff', fontWeight: 'bold' },
             icon: '🛒'
@@ -78,7 +94,6 @@ export default function ProductDetails({ product }: { product: any }) {
     };
 
     if (!product) return <div className="text-white text-center p-10">Carregando detalhes...</div>;
-    const currentPrice = Number(selectedVariant?.price || 0);
 
     return (
         <>
@@ -86,6 +101,11 @@ export default function ProductDetails({ product }: { product: any }) {
 
                 {/* COLUNA 1: IMAGEM */}
                 <div className="relative rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 aspect-square lg:aspect-auto lg:h-[600px] group">
+                    {isOnSale && (
+                        <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)] z-10 animate-pulse">
+                            🔥 {discountPercent}% OFF
+                        </div>
+                    )}
                     <img
                         src={getImageUrl(product.image)}
                         alt={product.name}
@@ -173,12 +193,20 @@ export default function ProductDetails({ product }: { product: any }) {
                     <div className="flex flex-col gap-4 pt-4 border-t border-white/10" ref={mainButtonRef}>
                         <div className="flex items-end gap-2">
                             <span className="text-gray-400 text-sm mb-1">Total:</span>
-                            <span className="text-4xl font-black text-white tracking-tighter">
-                                R$ {currentPrice.toFixed(2)}
-                            </span>
-                            <span className="text-sm text-green-400 font-bold tracking-wide">
-                                ou R$ {(currentPrice * PIX_MULTIPLIER).toFixed(2)} no PIX ({PIX_DISCOUNT_PERCENT}% OFF)
-                            </span>
+                            <div className="flex flex-col">
+                                {/* O Preço Antigo (só aparece na promoção) */}
+                                {isOnSale && (
+                                    <span className="text-sm text-gray-500 line-through mb-[-4px]">
+                                        De: R$ {originalPrice.toFixed(2)}
+                                    </span>
+                                )}
+                                <span className="text-4xl font-black text-white tracking-tighter">
+                                    R$ {currentPrice.toFixed(2)}
+                                </span>
+                                <span className="text-sm text-green-400 font-bold tracking-wide">
+                                    ou R$ {(currentPrice * PIX_MULTIPLIER).toFixed(2)} no PIX ({PIX_DISCOUNT_PERCENT}% OFF)
+                                </span>
+                            </div>
                         </div>
 
                         <button

@@ -52,11 +52,19 @@ export default function ProductDetailsM2({ product }: { product: any }) {
     const numWidth = Number(width) || 0;
     const numHeight = Number(height) || 0;
 
+    // --- LÓGICA DE PROMOÇÃO E ÁREA ---
+    const isOnSale = product.is_on_sale;
+    const discountPercent = product.discount_percent || 0;
+
     const realArea = numWidth * numHeight; // Área Exata
     const isBelowMinimum = realArea > 0 && realArea < 0.5; // Regra do Meio Metro
     const chargedArea = isBelowMinimum ? 0.5 : realArea; // Área Cobrada
 
-    const currentPrice = chargedArea * basePricePerM2; // Preço Final
+    // Calcula o Total Original e o Total com Desconto
+    const originalTotalPrice = chargedArea * basePricePerM2;
+    const currentPrice = isOnSale
+        ? originalTotalPrice * (1 - (discountPercent / 100))
+        : originalTotalPrice;
 
     // --- AÇÕES ---
     const handleAddToCart = () => {
@@ -95,6 +103,11 @@ export default function ProductDetailsM2({ product }: { product: any }) {
 
             {/* COLUNA 1: IMAGEM */}
             <div className="relative rounded-[2.5rem] overflow-hidden bg-white/5 border border-white/10 aspect-square lg:aspect-auto lg:h-[600px] group">
+                {isOnSale && (
+                    <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-black px-4 py-2 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.8)] z-10 animate-pulse">
+                        🔥 {discountPercent}% OFF
+                    </div>
+                )}
                 <img
                     src={getImageUrl(product.image)}
                     alt={product.name}
@@ -187,11 +200,18 @@ export default function ProductDetailsM2({ product }: { product: any }) {
                         </div>
                         <div className="flex flex-col items-end">
                             <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Total Estimado</span>
+
+                            {isOnSale && (
+                                <span className="text-sm text-gray-500 line-through mb-[-4px]">
+                                    De: R$ {originalTotalPrice.toFixed(2)}
+                                </span>
+                            )}
+
                             <span className="text-4xl font-black text-white tracking-tighter">
                                 R$ {currentPrice.toFixed(2)}
                             </span>
-                            <span className="text-sm text-green-400 font-bold tracking-wide">
-                                ou R$ {(currentPrice * PIX_MULTIPLIER).toFixed(2)} no PIX ({PIX_DISCOUNT_PERCENT}% OFF)
+                            <span className="text-xs text-green-400 font-bold mt-1">
+                                ou R$ {(currentPrice * PIX_MULTIPLIER).toFixed(2)} no PIX
                             </span>
                         </div>
                     </div>

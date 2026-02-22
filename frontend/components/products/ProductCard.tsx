@@ -21,13 +21,32 @@ export default function ProductCard({ product }: { product: any }) {
         registerView(product.id);
     };
 
-    const handleAdd = () => {
-        addToCart(product, selectedVariant);
+    const handleAdd = (e: React.MouseEvent) => {
+        e.preventDefault(); // Muito importante: evita que clicar no botão abra a página do produto se ele estiver dentro de um Link
+
+        // Criamos um "clone" da variação, mas forçamos o preço com desconto
+        const variantWithDiscount = {
+            ...selectedVariant,
+            price: finalPrice
+        };
+
+        addToCart(product, variantWithDiscount);
+
         toast.success("Adicionado ao carrinho!", {
             style: { background: '#00AEEF', color: '#fff', fontWeight: 'bold' },
             icon: '🛒'
         });
     };
+
+    // --- LÓGICA DE PREÇO E PROMOÇÃO ---
+    const originalPrice = Number(selectedVariant?.price || product?.price || 0);
+    const isOnSale = product.is_on_sale;
+    const discountPercent = product.discount_percent || 0;
+
+    // Calcula o preço final (se tiver promoção, tira a %; se não, mantém o original)
+    const finalPrice = isOnSale
+        ? originalPrice * (1 - (discountPercent / 100))
+        : originalPrice;
 
     return (
         <>
@@ -38,6 +57,11 @@ export default function ProductCard({ product }: { product: any }) {
                     className="aspect-square w-full rounded-[1.5rem] overflow-hidden bg-black/20 mb-4 relative cursor-pointer group-hover:opacity-90 transition-opacity"
                     onClick={handleImageClick}
                 >
+                    {isOnSale && (
+                        <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(220,38,38,0.6)] z-10 animate-pulse">
+                            🔥 {discountPercent}% OFF
+                        </div>
+                    )}
                     <img
                         src={getImageUrl(product.image)}
                         alt={product.name}
@@ -140,12 +164,24 @@ export default function ProductCard({ product }: { product: any }) {
                                 <div className="flex items-center justify-between pt-2">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] text-gray-500 font-bold uppercase">Valor</span>
+
+                                        {/* Preço Antigo Riscado (Só aparece se tiver promoção) */}
+                                        {isOnSale && (
+                                            <span className="text-xs text-gray-500 line-through mb-[-4px] mt-1">
+                                                De: R$ {originalPrice.toFixed(2)}
+                                            </span>
+                                        )}
+
+                                        {/* Preço Novo (ou normal) */}
                                         <span className="text-2xl font-black text-white">
-                                            R$ {Number(selectedVariant?.price || 0).toFixed(2)}
+                                            R$ {finalPrice.toFixed(2)}
                                         </span>
+
+                                        {/* Cálculo do PIX já usando o Preço Novo Final! */}
                                         <span className="block text-[11px] text-green-400 font-bold mt-0.5">
-                                            ou R$ {(Number(selectedVariant?.price || product?.price || 0) * PIX_MULTIPLIER).toFixed(2)} no PIX
+                                            ou R$ {(finalPrice * PIX_MULTIPLIER).toFixed(2)} no PIX
                                         </span>
+
                                         <span className="text-[10px] text-gray-500 font-bold pt-2">
                                             Quant. {selectedVariant?.name || '1'} Uni
                                         </span>

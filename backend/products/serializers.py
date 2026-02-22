@@ -46,7 +46,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'id', 'name', 'slug', 'description', 'image',
             'production_time', 'category', 'category_name', 
             'variants', 'finishings', 'is_featured',
-            'views_count', 'category_slug', 'upsell_products', 'is_meter_price'
+            'views_count', 'category_slug', 'upsell_products', 'is_meter_price', 'is_on_sale', 'discount_percent'
         ]
 
     def get_image(self, obj):

@@ -41,6 +41,17 @@ class Product(models.Model):
         help_text="Marque se este produto usa calculadora de largura x altura (ex: Lonas, Adesivos)"
     )
 
+    is_on_sale = models.BooleanField(
+        default=False, 
+        verbose_name="Em Promoção?",
+        help_text="Marque para ativar o selo piscando e o preço com desconto."
+    )
+    discount_percent = models.PositiveIntegerField(
+        default=0, 
+        verbose_name="Desconto (%)",
+        help_text="Ex: Digite 15 para dar 15% de desconto no produto e em todas as suas variações."
+    )
+
     # (Opcional) Se você quiser flexibilidade no futuro para mudar o limite de 0.5m²
     # min_meter_area = models.DecimalField(
     #     max_digits=5, decimal_places=2, default=0.50,
