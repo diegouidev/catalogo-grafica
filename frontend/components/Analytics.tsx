@@ -62,8 +62,23 @@ export default function Analytics() {
 
     // Rastrear PageView quando a rota mudar (para SPAs como Next.js)
     useEffect(() => {
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'PageView');
+        if (typeof window !== 'undefined') {
+            // Monta a URL completa (slug + parâmetros de busca, se houver)
+            const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+
+            // 1. Dispara o PageView do Facebook
+            if ((window as any).fbq) {
+                (window as any).fbq('track', 'PageView');
+            }
+
+            // 2. Dispara o PageView do Google Analytics
+            if ((window as any).gtag) {
+                (window as any).gtag('event', 'page_view', {
+                    page_path: url,
+                    page_location: window.location.href,
+                    page_title: document.title,
+                });
+            }
         }
     }, [pathname, searchParams]);
 
